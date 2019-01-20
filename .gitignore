@@ -4,6 +4,7 @@
 # http://stackoverflow.com/questions/1022111/what-are-monodevelops-pidb-files
 *.pidb
 *.userprefs
+/Temp/*
 
 # Visual Studio & its tools
 *.sln

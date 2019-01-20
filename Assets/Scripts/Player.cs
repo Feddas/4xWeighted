@@ -5,7 +5,7 @@ using System.Linq;
 
 public class Player : MonoBehaviour
 {
-	public PlayerStats Stats;
+    public PlayerStats Stats;
 
     void Start()
     {
@@ -18,17 +18,25 @@ public class Player : MonoBehaviour
     {
         while (Stats != null)
         {
-			foreach (var tile in Stats.OccupiedTiles)
-			{
-				tile.Tick();
-			}
+            // create new population
+            foreach (var tile in Stats.OccupiedTiles)
+            {
+                tile.Tick();
+            }
 
-			Stats.TotalPopulation = Stats.OccupiedTiles.Sum(t => t.TilePopulation);
+            // Move towards weight
+            foreach (var tile in Stats.OccupiedTiles)
+            {
+                tile.TowardsWeighted();
+            }
 
-			foreach (var tile in Stats.OccupiedTiles)
-			{
-				tile.RefreshIconPopulation();
-			}
+            Stats.TotalPopulation = Stats.OccupiedTiles.Sum(t => t.TilePopulation + t.TilePopulationAdded);
+
+            // Population moves finished, update Ui
+            foreach (var tile in Stats.OccupiedTiles)
+            {
+                tile.RefreshIconPopulation();
+            }
 
             yield return new WaitForSeconds(GameSettings.SecondsPerTick);
         }

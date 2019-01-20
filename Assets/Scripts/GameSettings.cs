@@ -4,5 +4,5 @@ using UnityEngine;
 
 public static class GameSettings
 {
-	public static float SecondsPerTick = 1;
+    public static float SecondsPerTick = 2;
 }
