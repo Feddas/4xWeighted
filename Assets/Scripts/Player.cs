@@ -27,7 +27,7 @@ public class Player : MonoBehaviour
             // Move towards weight
             foreach (var tile in Stats.OccupiedTiles)
             {
-                tile.TowardsWeighted();
+                tile.TilePopulation = tile.Neighbor.TowardsWeighted(tile.TilePopulation, tile.OwnedByPlayer.WeightedTiles);
             }
 
             Stats.TotalPopulation = Stats.OccupiedTiles.Sum(t => t.TilePopulation + t.TilePopulationAdded);

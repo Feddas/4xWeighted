@@ -13,13 +13,10 @@ public class Tile : MonoBehaviour
         public UnityEngine.UI.Image IconPopulation;
     }
 
-    public TileUi Ui;
+    public NesScripts.Controls.PathFind.Point Position { get; private set; }
+    public TileNeighbor Neighbor { get; private set; }
 
-    /// <summary> Neighboring tiles that this tile can move it's population onto </summary>
-    public Tile North;
-    public Tile South;
-    public Tile East;
-    public Tile West;
+    public TileUi Ui;
 
     public PlayerStats OwnedByPlayer;
 
@@ -33,7 +30,6 @@ public class Tile : MonoBehaviour
     public int TileWeight;
 
     private int lastWeight;
-    private NesScripts.Controls.PathFind.Point position;
     private RectTransform rectTrans;
 
     void Awake()
@@ -77,74 +73,6 @@ public class Tile : MonoBehaviour
         }
 
         TilePopulation++;
-    }
-
-    public void TowardsWeighted()
-    {
-        if (OwnedByPlayer.WeightedTiles == null
-        || OwnedByPlayer.WeightedTiles.Count == 0
-        || OwnedByPlayer.WeightedTiles.Contains(this))
-        {
-            return;
-        }
-
-        if (this.position == OwnedByPlayer.WeightedTiles[0].position)
-        {   // Don't move any population, we are a weighted tile
-            return;
-        }
-
-        int xDiff = OwnedByPlayer.WeightedTiles[0].position.x - this.position.x;
-        int yDiff = OwnedByPlayer.WeightedTiles[0].position.y - this.position.y;
-        int xDiffAbs = Mathf.Abs(xDiff);
-        int yDiffAbs = Mathf.Abs(yDiff);
-
-        if (xDiffAbs == yDiffAbs) // send half both ways
-        {
-            moveTowards(sendHalf, xDiff, this.East, this.West);
-            moveTowards(sendAll, yDiff, this.North, this.South);
-        }
-        else if (xDiffAbs > yDiffAbs) // send all along x
-        {
-            moveTowards(sendAll, xDiff, this.East, this.West);
-        }
-        else // send all along y
-        {
-            moveTowards(sendAll, yDiff, this.North, this.South);
-        }
-    }
-
-    private void moveTowards(System.Action<Tile> sendAmount, int magnitude, Tile onPositve, Tile onNegative)
-    {
-        if (magnitude > 0)
-        {
-            sendAmount(onPositve);
-        }
-        else if (magnitude < 0)
-        {
-            sendAmount(onNegative);
-        }
-        else
-        {
-            throw new System.Exception("Messed up moveTowards " + magnitude + ", " + onPositve.name + ", " + onNegative);
-        }
-    }
-
-    private void sendAll(Tile neighboringTile)
-    {
-        if (neighboringTile == null)
-            return;
-
-        neighboringTile.TilePopulationAdded += this.TilePopulation;
-        this.TilePopulation = 0;
-    }
-
-    private void sendHalf(Tile neighboringTile)
-    {
-        if (neighboringTile == null)
-            return;
-
-        neighboringTile.TilePopulationAdded += this.TilePopulation / 2;
-        this.TilePopulation -= this.TilePopulation / 2;
     }
 
     public void UpdateWeight()
@@ -195,7 +123,8 @@ public class Tile : MonoBehaviour
 
     public void SetPosition(int x, int y)
     {
-        position.Set(x, y);
+        Position = new NesScripts.Controls.PathFind.Point(x, y);
+        Neighbor = new TileNeighbor(Position);
         this.rectTrans.anchoredPosition = new Vector2(x * 100, y * 100);
     }
 }
