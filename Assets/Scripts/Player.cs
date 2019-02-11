@@ -18,7 +18,7 @@ public class Player : MonoBehaviour
     {
         while (Stats != null)
         {
-            // create new population
+            // create population for this tick
             foreach (var tile in Stats.OccupiedTiles)
             {
                 tile.Tick();
