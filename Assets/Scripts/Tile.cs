@@ -2,50 +2,65 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> Single tile cell on the map </summary>
 public class Tile : MonoBehaviour
 {
     [System.Serializable]
     public class TileUi
     {
+        [Tooltip("Shows the exact population count of this tile.")]
         public UnityEngine.UI.Text TextPopulation;
-        public UnityEngine.UI.Image TileBackground;
-        public UnityEngine.UI.Image IconWeight;
+
+        [Tooltip("A fraction of this image is shown to represent the percent of population this tile houses out of all population a single player owns.")]
         public UnityEngine.UI.Image IconPopulation;
+
+        [Tooltip("Color is changed to show who owns this tile.")]
+        public UnityEngine.UI.Image TileBackground;
+
+        [Tooltip("A fraction of this image is shown to represent the percent of weight this tile uses out of all weights in use by a single player.")]
+        public UnityEngine.UI.Image IconWeight;
     }
 
+    /// <summary> Where this tile is on the map </summary>
     public NesScripts.Controls.PathFind.Point Position { get; private set; }
+
+    /// <summary> Access to all neighboring tiles </summary>
     public TileNeighbor Neighbor { get; private set; }
 
     public TileUi Ui;
 
+    [Tooltip("Which player currently owns this tile")]
     public PlayerStats OwnedByPlayer;
+
+    [Tooltip("Which player performed an action on this tile. Such as tapping on its Button component to set its weight.")]
+    public PlayerStats ActionByPlayer;
 
     [Tooltip("Population on this tile last tick plus population created on this tile.")]
     public int TilePopulation = 0;
 
-    [Tooltip("Population on this tile last tick plus population created on this tile.")]
+    [Tooltip("Population sent to this tile from another tile.")]
     public int TilePopulationAdded;
 
-    [Range(0, 2)]
-    public int TileWeight;
+    public TileWeight Weight;
 
-    private int lastWeight;
     private RectTransform rectTrans;
 
     void Awake()
     {
         rectTrans = this.transform as RectTransform;
     }
+
     void Start()
     {
         if (OwnedByPlayer != null)
         {
-            // Weight Icon is in front with brightest color, rest get progressively darker
-            Color darkenStep = new Color(.8f, .8f, .8f, 1);
+            // Set UI colors
             Ui.IconWeight.color = OwnedByPlayer.Color;
+            Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
             Ui.IconPopulation.color = Ui.IconWeight.color * darkenStep;
             Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
 
+            // Set tile ownership
             OwnedByPlayer.OccupiedTiles.Add(this);
         }
     }
@@ -54,19 +69,21 @@ public class Tile : MonoBehaviour
 
     void OnValidate()
     {
-        UpdateWeight();
+        Weight.UpdateWeight(ActionByPlayer, this);
     }
 
+    /// <summary> Called when the tile Button component is clicked </summary>
     public void NextWeight()
     {
         // TODO: #1 apply weight to unoccupied tile. Needs a way to pass PlayerIndex
 
-        TileWeight = (TileWeight + 1) % 3;
-        UpdateWeight();
+        Weight.NextWeight(ActionByPlayer, this);
     }
 
+    /// <summary> What this tile does on every Update tick </summary>
     public void Tick()
     {
+        // Tiles only generate population when they become owned
         if (OwnedByPlayer == null)
         {
             return;
@@ -75,44 +92,16 @@ public class Tile : MonoBehaviour
         TilePopulation++;
     }
 
-    public void UpdateWeight()
-    {
-        if (OwnedByPlayer == null || lastWeight == TileWeight)
-        {
-            return;
-        }
-
-        // update which tiles have a weight icon
-        if (TileWeight == 0)
-        {
-            Ui.IconWeight.fillAmount = 0;
-            OwnedByPlayer.WeightedTiles.Remove(this);
-        }
-        else if (lastWeight == 0)
-        {
-            OwnedByPlayer.WeightedTiles.Add(this);
-        }
-
-        // change TotalWeights
-        OwnedByPlayer.TotalWeights -= lastWeight;
-        lastWeight = TileWeight;
-        OwnedByPlayer.TotalWeights += TileWeight;
-
-        // update all weighted icons
-        foreach (var tile in OwnedByPlayer.WeightedTiles)
-        {
-            tile.RefreshIconWeight();
-        }
-    }
-
+    /// <summary> A different tile has called Weight.UpdateWeight(). This tile needs to show what fraction of the total weight is left for this tile. </summary>
     public void RefreshIconWeight()
     {
-        Ui.IconWeight.fillAmount = (float)TileWeight / OwnedByPlayer.TotalWeights;
+        Ui.IconWeight.fillAmount = (float)Weight.Current / ActionByPlayer.TotalWeights;
     }
 
+    /// <summary> Population calculation are finished, display the population of this tile </summary>
     public void RefreshIconPopulation()
     {
-        // add newly added units to this tile
+        // add units that were newly added from neighboring tiles to this tile
         this.TilePopulation += this.TilePopulationAdded;
         this.TilePopulationAdded = 0;
 

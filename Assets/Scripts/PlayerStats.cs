@@ -14,7 +14,6 @@ public class PlayerStats : ScriptableObject
 
 	void OnEnable()
 	{
-		Debug.Log(this.name + " OnEnable");
 		TotalWeights = 0;
 		TotalPopulation = 0;
 		WeightedTiles = new List<Tile>();

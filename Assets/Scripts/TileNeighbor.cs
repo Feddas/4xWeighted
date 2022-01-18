@@ -61,7 +61,7 @@ public class TileNeighbor
             moveTowards(ofPopulation, tileToReinforce.yDiff, this.North, this.South);
         }
 
-        return 0;
+        return 0; // the population remaining on the tile is always 0. It has all been put into TilePopulationAdded
     }
 
     private void moveTowards(int ofPopulation, int magnitude, Tile onPositve, Tile onNegative)
@@ -94,15 +94,15 @@ public class TileNeighbor
             currentCandiate.xDiffAbs = Mathf.Abs(currentCandiate.xDiff);
             currentCandiate.yDiffAbs = Mathf.Abs(currentCandiate.yDiff);
             currentCandiate.DistanceToTile = currentCandiate.xDiffAbs + currentCandiate.yDiffAbs;
-            currentCandiate.WeightOnTile = tile.TileWeight;
-            currentCandiate.PopulationWeighted = tile.TilePopulation / tile.TileWeight; // divide by the weight to make the tile look like it needs population
-            currentCandiate.NotAsGoodRank = (tile.TilePopulation * tile.TileWeight) / currentCandiate.DistanceToTile;
+            currentCandiate.WeightOnTile = tile.Weight.Current;
+            currentCandiate.PopulationWeighted = tile.TilePopulation / tile.Weight.Current; // divide by the weight to make the tile look like it needs population
+            currentCandiate.NotAsGoodRank = (tile.TilePopulation * tile.Weight.Current) / currentCandiate.DistanceToTile;
             candiates.Add(currentCandiate);
 
             // track which weighted tile has the biggest population
             if (currentCandiate.PopulationWeighted > biggestPopulation)
             {
-                biggestPopulation = (tile.TilePopulation * tile.TileWeight);
+                biggestPopulation = (tile.TilePopulation * tile.Weight.Current);
             }
         }
 
