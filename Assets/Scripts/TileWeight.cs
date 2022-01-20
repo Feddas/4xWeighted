@@ -46,7 +46,7 @@ public class TileWeight
         // update all weighted icons
         foreach (var tile in player.WeightedTiles)
         {
-            tile.RefreshIconWeight();
+            tile.RefreshIconWeight(player);
         }
     }
 }

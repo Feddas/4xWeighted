@@ -267,7 +267,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1aca099cd58051a4d8da654119a95928, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Stats: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+  AllPlayers:
+  - {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+  ClickingPlayer: {fileID: 0}
 --- !u!4 &916698323
 Transform:
   m_ObjectHideFlags: 0

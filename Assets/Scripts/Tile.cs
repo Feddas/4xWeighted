@@ -32,9 +32,6 @@ public class Tile : MonoBehaviour
     [Tooltip("Which player currently owns this tile")]
     public PlayerStats OwnedByPlayer;
 
-    [Tooltip("Which player performed an action on this tile. Such as tapping on its Button component to set its weight.")]
-    public PlayerStats ActionByPlayer;
-
     [Tooltip("Population on this tile last tick plus population created on this tile.")]
     public int TilePopulation = 0;
 
@@ -65,19 +62,23 @@ public class Tile : MonoBehaviour
         }
     }
 
-    void Update() { }
+    // void Update() { }
 
     void OnValidate()
     {
-        Weight.UpdateWeight(ActionByPlayer, this);
+        Weight.UpdateWeight(OwnedByPlayer, this);
     }
 
     /// <summary> Called when the tile Button component is clicked </summary>
     public void NextWeight()
     {
-        // TODO: #1 apply weight to unoccupied tile. Needs a way to pass PlayerIndex
+        NextWeight(Player.Manager.ClickingPlayer);
+    }
 
-        Weight.NextWeight(ActionByPlayer, this);
+    /// <summary> Allows NextWeight to be called by the non-Clicking players, such as AI </summary>
+    public void NextWeight(PlayerStats player)
+    {
+        Weight.NextWeight(player, this);
     }
 
     /// <summary> What this tile does on every Update tick </summary>
@@ -93,9 +94,9 @@ public class Tile : MonoBehaviour
     }
 
     /// <summary> A different tile has called Weight.UpdateWeight(). This tile needs to show what fraction of the total weight is left for this tile. </summary>
-    public void RefreshIconWeight()
+    public void RefreshIconWeight(PlayerStats player)
     {
-        Ui.IconWeight.fillAmount = (float)Weight.Current / ActionByPlayer.TotalWeights;
+        Ui.IconWeight.fillAmount = (float)Weight.Current / player.TotalWeights;
     }
 
     /// <summary> Population calculation are finished, display the population of this tile </summary>
