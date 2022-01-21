@@ -29,57 +29,100 @@ public class TileNeighbor
 
     private NesScripts.Controls.PathFind.Point position { get; set; }
 
+    /// <summary> Swaps between true and false each time it is read. This allows the path taken to be more evenly distributed. </summary>
+    public bool goVertical
+    {
+        get
+        {
+            _goVertical = false == _goVertical;
+            return _goVertical;
+        }
+    }
+    private bool _goVertical = false;
+
+
     public TileNeighbor(NesScripts.Controls.PathFind.Point tilePosition)
     {
         position = tilePosition;
     }
 
-    /// <summary> returns population of this tile after population has moved off of it </summary>
-    public int TowardsWeighted(int ofPopulation, List<Tile> WeightedTiles)
+    public Tile TowardsWeighted(Tile tile)
     {
+        List<Tile> WeightedTiles = tile.OwnedByPlayer.WeightedTiles;
+
         if (WeightedTiles == null
         || WeightedTiles.Count == 0
         || WeightedTiles.Any(t => t.Position == this.position)) // Don't move any population, we are a weighted tile
         {
-            return ofPopulation;
+            return null;
         }
 
         var tileToReinforce = pickWeightedTile(this.position, WeightedTiles);
 
-        if (tileToReinforce.xDiffAbs == tileToReinforce.yDiffAbs) // send half both ways
+        if (tileToReinforce.xDiffAbs == tileToReinforce.yDiffAbs) // send along owned tiles or switch between side using goVertical
         {
-            moveTowards(ofPopulation / 2, tileToReinforce.xDiff, this.East, this.West);
-            ofPopulation -= ofPopulation / 2;
-            moveTowards(ofPopulation, tileToReinforce.yDiff, this.North, this.South);
+            return pickVerticalOrHorizontal(tileToReinforce, tile.OwnedByPlayer);
         }
-        else if (tileToReinforce.xDiffAbs > tileToReinforce.yDiffAbs) // send all along x
+        else if (tileToReinforce.xDiffAbs > tileToReinforce.yDiffAbs) // send population along x
         {
-            moveTowards(ofPopulation, tileToReinforce.xDiff, this.East, this.West);
+            return pickOnAxis(tileToReinforce.xDiff, this.East, this.West);
         }
-        else // send all along y
+        else // send population along y
         {
-            moveTowards(ofPopulation, tileToReinforce.yDiff, this.North, this.South);
+            return pickOnAxis(tileToReinforce.yDiff, this.North, this.South);
         }
-
-        return 0; // the population remaining on the tile is always 0. It has all been put into TilePopulationAdded
     }
 
-    private void moveTowards(int ofPopulation, int magnitude, Tile onPositve, Tile onNegative)
+    /// <summary> Vertical tile selection has the same distance to the weighted tile as Horizontal. Determine which one to pick. </summary>
+    private Tile pickVerticalOrHorizontal(TileCandiate tileToReinforce, PlayerStats populationOwner)
     {
-        if (magnitude > 0)
+        // narrow down to two tiles
+        var xTile = pickOnAxis(tileToReinforce.xDiff, this.East, this.West);
+        var yTile = pickOnAxis(tileToReinforce.yDiff, this.North, this.South);
+
+        // narrow down to one tile
+        bool noneOwned = xTile.OwnedByPlayer != populationOwner && xTile.OwnedByPlayer != populationOwner;
+        bool allOwned = xTile.OwnedByPlayer == populationOwner && xTile.OwnedByPlayer == populationOwner;
+        if (noneOwned || allOwned) // going either way works the same
         {
-            send(ofPopulation, onPositve);
+            // pick which way to go based on the last value of goVertical
+            return goVertical ? yTile : xTile;
         }
-        else if (magnitude < 0)
+        else if (xTile == populationOwner) // favor reinforcing a tile over expanding
         {
-            send(ofPopulation, onNegative);
+            return xTile;
         }
         else
         {
-            throw new System.Exception("Messed up moveTowards " + magnitude + ", " + onPositve.name + ", " + onNegative);
+            return yTile;
         }
     }
 
+    /// <summary> Pick which tile along an axis, horizontal or vertical, that more quickly gets the population towards the weighted tiles relative location </summary>
+    /// <param name="magnitude"> Relative location of the weighted tile goal </param>
+    /// <param name="onPositive"></param>
+    /// <param name="onNegative"></param>
+    /// <returns></returns>
+    private Tile pickOnAxis(int magnitude, Tile onPositive, Tile onNegative)
+    {
+        if (magnitude > 0)
+        {
+            return onPositive;
+        }
+        else if (magnitude < 0)
+        {
+            return onNegative;
+        }
+        else
+        {
+            throw new System.Exception("Messed up moveTowards " + magnitude + ", " + onPositive.name + ", " + onNegative.name);
+        }
+    }
+
+    /// <summary> determine which one of this players weighted tiles this tile should target to move population towards </summary>
+    /// <param name="source"></param>
+    /// <param name="weightedTiles"></param>
+    /// <returns></returns>
     private TileCandiate pickWeightedTile(NesScripts.Controls.PathFind.Point source, List<Tile> weightedTiles)
     {
         // get stats for all weighted tiles relative to the source tile
@@ -123,14 +166,6 @@ public class TileNeighbor
 
         //return candiates.MaxObject(c => c.NotAsGoodRank);
         return currentCandiate;
-    }
-
-    private void send(int population, Tile neighboringTile)
-    {
-        if (neighboringTile == null)
-            return;
-
-        neighboringTile.TilePopulationAdded += population;
     }
 }
 

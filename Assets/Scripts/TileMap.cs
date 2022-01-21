@@ -28,7 +28,7 @@ public class TileMap : MonoBehaviour
         foreach (var spawn in SpawnLocations)
         {
             tile = TileAt(spawn.xPosition, spawn.yPosition);
-            tile.Defend(spawn.ForPlayer, spawn.StartingArmySize);
+            tile.DefendNow(spawn.ForPlayer, spawn.StartingArmySize);
         }
     }
 

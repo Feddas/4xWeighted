@@ -5,6 +5,8 @@ using UnityEngine;
 /// <summary> Single tile cell on the map </summary>
 public class Tile : MonoBehaviour
 {
+    private readonly Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
+
     [System.Serializable]
     public class TileUi
     {
@@ -62,36 +64,60 @@ public class Tile : MonoBehaviour
         Weight.UpdateWeight(OwnedByPlayer, this);
     }
 
-    public void Defend(PlayerStats attacker, int armySize)
+    /// <summary>
+    /// Defends this tile against an attacker. Ownership is transfered if the attacker wins.
+    /// </summary>
+    public void DefendNow(PlayerStats attacker, int armySize)
     {
+        var onChange = DefendLater(attacker, armySize);
+        if (onChange != null)
+        {
+            onChange(); // transfer tile ownership
+        }
+    }
+
+    /// <summary>
+    /// Defends this tile against an attacker. Ownership is not transfered here. If it should be transfered, that action is returned to be run later.
+    /// </summary>
+    /// <param name="attacker"></param>
+    /// <param name="armySize"></param>
+    /// <returns> Action to transfer ownership of the tile </returns>
+    public System.Action DefendLater(PlayerStats attacker, int armySize)
+    {
+        // TODO: what if TilePopulation is already negative from a yet to be transferedOwner? Handle multiple attacks on the same tile. Maybe by tracking a "PotentialOwner"?
         TilePopulation -= armySize;
+
         if (TilePopulation >= 0) // attack was not strong enough to capture tile
         {
-            return;
+            return null;
         }
+        // else
+        return () => transferOwner(attacker);
+    }
 
+    /// <summary> Transfers the ownership of a tile from its current owner to ownerNew </summary>
+    private void transferOwner(PlayerStats ownerNew)
+    {
         // remove old owner
         if (OwnedByPlayer != null)
         {
             OwnedByPlayer.OccupiedTiles.Remove(this);
         }
 
-        // set new owner
-        if (attacker != null)
+        // set tile ownership
+        Color newColor = Color.white;
+        OwnedByPlayer = ownerNew; // null value means the tile is now neutral
+        if (ownerNew != null) // update player
         {
-            // Set UI colors
-            Ui.IconWeight.color = attacker.Color;
-            Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
-            Ui.IconPopulation.color = Ui.IconWeight.color * darkenStep;
-            Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
-
-            // Set tile ownership
-            attacker.OccupiedTiles.Add(this);
-            OwnedByPlayer = attacker;
-
-            // convert army
-            TilePopulation *= -1;
+            ownerNew.OccupiedTiles.Add(this);
+            newColor = ownerNew.Color;
         }
+        TilePopulation *= -1; // convert army
+
+        // Set UI colors
+        Ui.IconWeight.color = newColor;
+        Ui.IconPopulation.color = newColor * darkenStep;
+        Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
     }
 
     /// <summary> Called when the tile Button component is clicked </summary>
