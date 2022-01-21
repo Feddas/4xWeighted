@@ -49,16 +49,9 @@ public class Tile : MonoBehaviour
 
     void Start()
     {
-        if (OwnedByPlayer != null)
+        if (OwnedByPlayer == null) // TileMap.cs modifies this value by caling AttackWith
         {
-            // Set UI colors
-            Ui.IconWeight.color = OwnedByPlayer.Color;
-            Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
-            Ui.IconPopulation.color = Ui.IconWeight.color * darkenStep;
-            Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
-
-            // Set tile ownership
-            OwnedByPlayer.OccupiedTiles.Add(this);
+            RefreshIconPopulation();
         }
     }
 
@@ -67,6 +60,38 @@ public class Tile : MonoBehaviour
     void OnValidate()
     {
         Weight.UpdateWeight(OwnedByPlayer, this);
+    }
+
+    public void Defend(PlayerStats attacker, int armySize)
+    {
+        TilePopulation -= armySize;
+        if (TilePopulation >= 0) // attack was not strong enough to capture tile
+        {
+            return;
+        }
+
+        // remove old owner
+        if (OwnedByPlayer != null)
+        {
+            OwnedByPlayer.OccupiedTiles.Remove(this);
+        }
+
+        // set new owner
+        if (attacker != null)
+        {
+            // Set UI colors
+            Ui.IconWeight.color = attacker.Color;
+            Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
+            Ui.IconPopulation.color = Ui.IconWeight.color * darkenStep;
+            Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
+
+            // Set tile ownership
+            attacker.OccupiedTiles.Add(this);
+            OwnedByPlayer = attacker;
+
+            // convert army
+            TilePopulation *= -1;
+        }
     }
 
     /// <summary> Called when the tile Button component is clicked </summary>
@@ -108,7 +133,9 @@ public class Tile : MonoBehaviour
 
         // update Ui
         Ui.TextPopulation.text = TilePopulation.ToString();
-        Ui.IconPopulation.fillAmount = (float)TilePopulation / OwnedByPlayer.TotalPopulation;
+        Ui.IconPopulation.fillAmount = OwnedByPlayer ?
+            (float)TilePopulation / OwnedByPlayer.TotalPopulation // set percent of total population
+            : 0; // this tile is unowned, neutral player doesn't have a TotalPopulation
     }
 
     public void SetPosition(int x, int y)

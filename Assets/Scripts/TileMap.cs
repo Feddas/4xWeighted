@@ -4,24 +4,32 @@ using UnityEngine;
 
 public class TileMap : MonoBehaviour
 {
-    //    public static T[,] GetNew2DArray<T>(int x, int y, T initialValue)
-    //    {
-    //        T[,] nums = new T[x, y];
-    //        for (int i = 0; i < x * y; i++) nums[i % x, i / x] = initialValue;
-    //        return nums;
-    //    }
+    [System.Serializable]
+    public class SpawnLocation
+    {
+        public PlayerStats ForPlayer;
+        public int StartingArmySize = 10;
+        public int xPosition; // TODO: use Vector2Int
+        public int yPosition;
+    }
 
     public Tile TilePrefab;
     public int width = 3;
     public int height = 4;
     public Tile[,] Tiles;
+    public List<SpawnLocation> SpawnLocations;
 
-    //    private bool[,] walkable;// = GetNew2DArray(width, height, true);
-
-    void Start()
+    void Awake()
     {
         createTiles();
-        //        NesScripts.Controls.PathFind.Grid grid = new NesScripts.Controls.PathFind.Grid(walkable);
+
+        // spawn players
+        Tile tile;
+        foreach (var spawn in SpawnLocations)
+        {
+            tile = TileAt(spawn.xPosition, spawn.yPosition);
+            tile.Defend(spawn.ForPlayer, spawn.StartingArmySize);
+        }
     }
 
     void Update() { }

@@ -332,6 +332,10 @@ MonoBehaviour:
     type: 2}
   width: 4
   height: 6
+  SpawnLocations:
+  - ForPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+    xPosition: 1
+    yPosition: 1
 --- !u!1 &1911578011
 GameObject:
   m_ObjectHideFlags: 0

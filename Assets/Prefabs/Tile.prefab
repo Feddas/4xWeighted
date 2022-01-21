@@ -251,9 +251,8 @@ MonoBehaviour:
     IconPopulation: {fileID: 114897019085153906}
     TileBackground: {fileID: 114431626445418546}
     IconWeight: {fileID: 114490871545805464}
-  OwnedByPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
-  ActionByPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
-  TilePopulation: 0
+  OwnedByPlayer: {fileID: 0}
+  TilePopulation: 2
   TilePopulationAdded: 0
   Weight:
     Current: 0
