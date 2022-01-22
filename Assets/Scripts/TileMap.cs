@@ -25,14 +25,31 @@ public class TileMap : MonoBehaviour
 
         // spawn players
         Tile tile;
+        HashSet<Tile> startingTiles = new HashSet<Tile>(); // HashSet used in hopes of duplicates automatically being removed
         foreach (var spawn in SpawnLocations)
         {
             tile = TileAt(spawn.xPosition, spawn.yPosition);
-            tile.DefendNow(spawn.ForPlayer, spawn.StartingArmySize);
+            tile.DefendAdd(spawn.ForPlayer, spawn.StartingArmySize);
+            startingTiles.Add(tile);
+        }
+
+        // resolve which players were able to spawn
+        foreach (var startingTile in startingTiles)
+        {
+            startingTile.DefendResolve();
         }
     }
 
-    void Update() { }
+    // void Update() { }
+
+    /// <summary> Check all tiles on the map to see if they have any attacks that need to be resolved. Note, this should only be done once per tick. </summary>
+    public void ResolveAttacks()
+    {
+        foreach (var tile in Tiles)
+        {
+            tile.DefendResolve();
+        }
+    }
 
     private void createTiles()
     {

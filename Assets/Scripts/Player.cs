@@ -11,6 +11,9 @@ public class Player : MonoBehaviour
     [Tooltip("static (player# & color) and dynamic (population & weights) stats")]
     public List<PlayerStats> AllPlayers = null;
 
+    [Tooltip("Used to trigger resolution of attacks")]
+    public TileMap AllTiles = null;
+
     [Header("Debug")]
     [Tooltip("Player this is performing actions. Such as tapping on a tiles Button component to set its weight.")]
     public PlayerStats ClickingPlayer = null;
@@ -42,10 +45,14 @@ public class Player : MonoBehaviour
         // do ticks for all players
         while (AllPlayers != null)
         {
+            // initiate attacks
             foreach (var player in AllPlayers)
             {
                 movePopulation(player);
             }
+
+            // resolve attacks
+            AllTiles.ResolveAttacks();
 
             // after all populations have finished moving, update stats
             foreach (var player in AllPlayers)
@@ -68,16 +75,9 @@ public class Player : MonoBehaviour
         }
 
         // Move towards weight
-        List<System.Action> ownershipHistory = new List<System.Action>(); // note: this is needed because OccupiedTiles can't be modified while iterating through them
         foreach (var tile in player.OccupiedTiles)
         {
-            moveFrom(tile, ref ownershipHistory);
-        }
-
-        // Transfer tile ownership
-        foreach (var change in ownershipHistory)
-        {
-            change(); // TODO: BUG: figure out why populations can still be negative after this call
+            moveFrom(tile);
         }
     }
 
@@ -85,7 +85,7 @@ public class Player : MonoBehaviour
     private void updateStats(PlayerStats player)
     {
         // update stats
-        player.TotalPopulation = player.OccupiedTiles.Sum(t => t.TilePopulation + t.TilePopulationAdded);
+        player.TotalPopulation = player.OccupiedTiles.Sum(t => t.TilePopulation + t.TileReinforcements);
 
         // Population moves finished, update Ui
         foreach (var tile in player.OccupiedTiles)
@@ -96,8 +96,7 @@ public class Player : MonoBehaviour
 
     /// <summary> Moves population on origin towards a weight </summary>
     /// <param name="origin"></param>
-    /// <param name="ownerHistory"> if a new tile is captured due to this move, it is added to this list. The capture action is not done in this function. </param>
-    private void moveFrom(Tile origin, ref List<System.Action> ownerHistory)
+    private void moveFrom(Tile origin)
     {
         Tile destination = origin.Neighbor.TowardsWeighted(origin);
 
@@ -110,17 +109,13 @@ public class Player : MonoBehaviour
         // reinforce
         if (destination.OwnedByPlayer == origin.OwnedByPlayer)
         {
-            destination.TilePopulationAdded += origin.TilePopulation;
+            destination.TileReinforcements += origin.TilePopulation;
         }
 
         // attack
         else
         {
-            var changeOwner = destination.DefendLater(origin.OwnedByPlayer, origin.TilePopulation);
-            if (changeOwner != null)
-            {
-                ownerHistory.Add(changeOwner);
-            }
+            destination.DefendAdd(origin.OwnedByPlayer, origin.TilePopulation);
         }
 
         // population was depleted from a reinforce or attack

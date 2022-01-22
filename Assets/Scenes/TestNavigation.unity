@@ -250,7 +250,7 @@ GameObject:
   - component: {fileID: 916698323}
   - component: {fileID: 916698322}
   m_Layer: 0
-  m_Name: Player1
+  m_Name: PlayerManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -269,6 +269,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AllPlayers:
   - {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+  - {fileID: 11400000, guid: 71865c75784012d498d22ff964a76a1b, type: 2}
+  AllTiles: {fileID: 991922581}
   ClickingPlayer: {fileID: 0}
 --- !u!4 &916698323
 Transform:
@@ -334,8 +336,13 @@ MonoBehaviour:
   height: 6
   SpawnLocations:
   - ForPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+    StartingArmySize: 10
     xPosition: 1
     yPosition: 1
+  - ForPlayer: {fileID: 11400000, guid: 71865c75784012d498d22ff964a76a1b, type: 2}
+    StartingArmySize: 10
+    xPosition: 2
+    yPosition: 4
 --- !u!1 &1911578011
 GameObject:
   m_ObjectHideFlags: 0
