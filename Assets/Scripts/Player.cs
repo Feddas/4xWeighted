@@ -77,7 +77,7 @@ public class Player : MonoBehaviour
         // Move towards weight
         foreach (var tile in player.OccupiedTiles)
         {
-            moveFrom(tile);
+            moveFrom(tile, player);
         }
     }
 
@@ -96,9 +96,9 @@ public class Player : MonoBehaviour
 
     /// <summary> Moves population on origin towards a weight </summary>
     /// <param name="origin"></param>
-    private void moveFrom(Tile origin)
+    private void moveFrom(Tile origin, PlayerStats player)
     {
-        Tile destination = origin.Neighbor.TowardsWeighted(origin);
+        Tile destination = player.PathingStrategy.TowardsWeighted(origin);
 
         // do nothing
         if (destination == null) // this tile is weighted or no weights exist
@@ -107,7 +107,7 @@ public class Player : MonoBehaviour
         }
 
         // reinforce
-        if (destination.OwnedByPlayer == origin.OwnedByPlayer)
+        if (destination.OwnedByPlayer == player)
         {
             destination.TileReinforcements += origin.TilePopulation;
         }
@@ -115,7 +115,7 @@ public class Player : MonoBehaviour
         // attack
         else
         {
-            destination.DefendAdd(origin.OwnedByPlayer, origin.TilePopulation);
+            destination.DefendAdd(player, origin.TilePopulation);
         }
 
         // population was depleted from a reinforce or attack

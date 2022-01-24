@@ -4,9 +4,25 @@ using UnityEngine;
 using System.Linq;
 
 /// <summary> Single tile cell on the map </summary>
+[RequireComponent(typeof(RectTransform))]
 public class Tile : MonoBehaviour
 {
-    private readonly Color darkenStep = new Color(.8f, .8f, .8f, 1); // Weight Icon is in front with brightest color, rest get progressively darker
+    public class TileNeighbor
+    {
+        /// <summary> Neighboring tiles that this tile can move its population onto </summary>
+        public Tile North;
+        public Tile South;
+        public Tile East;
+        public Tile West;
+
+        public TileNeighbor(Tile north, Tile south, Tile east, Tile west)
+        {
+            North = north;
+            South = south;
+            East = east;
+            West = west;
+        }
+    }
 
     [System.Serializable]
     public class TileUi
@@ -22,22 +38,6 @@ public class Tile : MonoBehaviour
 
         [Tooltip("A fraction of this image is shown to represent the percent of weight this tile uses out of all weights in use by a single player.")]
         public UnityEngine.UI.Image IconWeight;
-    }
-
-    /// <summary> An attack pending on this tile </summary>
-    public class Attack
-    {
-        [Tooltip("Who owns the attack")]
-        public PlayerStats Owner;
-
-        [Tooltip("Size of the attack")]
-        public int Population;
-
-        public Attack(PlayerStats owner, int armySize)
-        {
-            Owner = owner;
-            Population = armySize;
-        }
     }
 
     /// <summary> Where this tile is on the map </summary>
@@ -58,19 +58,19 @@ public class Tile : MonoBehaviour
     public int TileReinforcements;
 
     public TileWeight Weight;
+    public TileCombat Combat;
 
-    /// <summary> All attacks batched and pending to be resolved on this tile </summary>
-    private List<Attack> pendingAttacks = new List<Attack>();
-    private RectTransform rectTrans;
+    // void Awake() { }
+    // void Start() { }
 
-    void Awake()
+    public void Initialize(int x, int y)
     {
-        rectTrans = this.transform as RectTransform;
-    }
+        SetPosition(x, y);
 
-    void Start()
-    {
-        // Set population text for neutral tiles. non-neutral tiles are handled by TileMap.cs flagging them in Awake(), then Player.cs's first doTicks()
+        // Prepare to handle combat on this tile
+        Combat = new TileCombat();
+
+        // Set population text for neutral tiles. non-neutral tiles overwrite this by TileMap.cs attacking them in Awake(), then Player.cs's first doTicks() resolving combat
         if (OwnedByPlayer == null)
         {
             RefreshIconPopulation();
@@ -86,74 +86,12 @@ public class Tile : MonoBehaviour
 
     public void DefendAdd(PlayerStats attacker, int armySize)
     {
-        if (attacker != OwnedByPlayer)
-        {
-            pendingAttacks.Add(new Attack(attacker, armySize));
-        }
+        Combat.AddAttack(OwnedByPlayer, attacker, armySize);
     }
 
     public void DefendResolve()
     {
-        // Add reinforcements newly added from neighboring tiles to this tile
-        this.TilePopulation += this.TileReinforcements;
-        this.TileReinforcements = 0;
-
-        // nothing to defend against
-        if (pendingAttacks == null || pendingAttacks.Count == 0)
-        {
-            return;
-        }
-
-        // remove biggestAttacker from batchedAttacks
-        pendingAttacks = pendingAttacks.GroupBy(a => a.Owner)
-            .Select(group => new Attack(group.Key, group.Sum(row => row.Population))) // add together attacks coming from the same owner
-            .ToList();
-        int maxAttack = pendingAttacks.Max(a => a.Population);
-        var biggestAttacker = pendingAttacks.First(a => a.Population == maxAttack);
-        pendingAttacks.Remove(biggestAttacker);
-
-        // All attackers evenly attack one another. The only troop count that matters is that of the biggestAttacker.
-        // Example: if FinalAttacker = 100, Second = 80, Third = 1 then AttackSize = 100 - 80/2 - 1/2 = 100 - 40 - 0 = 60
-        // Example: if FinalAttacker = 100, Second = 98, Third = 98 then AttackSize = 100 - 49 - 49 = 2
-        foreach (var attack in pendingAttacks)
-        {
-            biggestAttacker.Population -= attack.Population / pendingAttacks.Count;
-        }
-
-        // What's left of the biggest attack is put up against this tiles defenses
-        TilePopulation -= biggestAttacker.Population;
-        if (TilePopulation < 0)
-        {
-            transferOwner(biggestAttacker.Owner);
-        }
-
-        // clean up
-        pendingAttacks.Clear();
-    }
-
-    /// <summary> Transfers the ownership of a tile from its current owner to ownerNew </summary>
-    private void transferOwner(PlayerStats ownerNew)
-    {
-        // remove old owner
-        if (OwnedByPlayer != null)
-        {
-            OwnedByPlayer.OccupiedTiles.Remove(this);
-        }
-
-        // set tile ownership
-        Color newColor = Color.white;
-        OwnedByPlayer = ownerNew; // null value means the tile is now neutral
-        if (ownerNew != null) // update player
-        {
-            ownerNew.OccupiedTiles.Add(this);
-            newColor = ownerNew.Color;
-        }
-        TilePopulation *= -1; // convert army
-
-        // Set UI colors
-        Ui.IconWeight.color = newColor;
-        Ui.IconPopulation.color = newColor * darkenStep;
-        Ui.TileBackground.color = Ui.IconPopulation.color * darkenStep;
+        Combat.Resolve(this);
     }
 
     /// <summary> Called when the tile Button component is clicked </summary>
@@ -199,7 +137,11 @@ public class Tile : MonoBehaviour
     public void SetPosition(int x, int y)
     {
         Position = new NesScripts.Controls.PathFind.Point(x, y);
-        Neighbor = new TileNeighbor(Position);
-        this.rectTrans.anchoredPosition = new Vector2(x * 100, y * 100);
+        (this.transform as RectTransform).anchoredPosition = new Vector2(x * 100, y * 100);
+    }
+
+    public void SetNeighbors(Tile north, Tile south, Tile east, Tile west)
+    {
+        Neighbor = new TileNeighbor(north, south, east, west);
     }
 }

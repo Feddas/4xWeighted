@@ -3,34 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-/// <summary> stats of a tile that is a candiate weighted tile to be reinforced relative to the tile that will reinforce it </summary>
-public struct TileCandiate
+public interface ITilePath
 {
-    public int WeightIndex;
-    public int DistanceToTile;
-    public int PopulationWeighted;
-    public int WeightOnTile;
-    public int xDiff;
-    public int yDiff;
-    public int xDiffAbs;
-    public int yDiffAbs;
-
-    /// <summary> Haven't thought through the math on why this way doesn't work as well as the uncommented way. But, NotAsGoodRank does avoid the extra "biggestPopulation" loop </summary>
-    public float NotAsGoodRank;
+    Tile TowardsWeighted(Tile tile);
 }
 
-public class TileNeighbor
+/// <summary>
+/// Pick goal of a path and path towards it one unit at a time without looking ahead for obstacles.
+/// </summary>
+public class TilePathManhattan : ITilePath
 {
-    /// <summary> Neighboring tiles that this tile can move it's population onto </summary>
-    public Tile North;
-    public Tile South;
-    public Tile East;
-    public Tile West;
+    /// <summary> stats of a tile that is a candiate weighted tile to be reinforced relative to the tile that will reinforce it </summary>
+    public struct TileCandiate
+    {
+        public int WeightIndex;
+        public int DistanceToTile;
+        public int PopulationWeighted;
+        public int WeightOnTile;
+        public int xDiff;
+        public int yDiff;
+        public int xDiffAbs;
+        public int yDiffAbs;
 
-    private NesScripts.Controls.PathFind.Point position { get; set; }
+        /// <summary> Haven't thought through the math on why this way doesn't work as well as the uncommented way. But, NotAsGoodRank does avoid the extra "biggestPopulation" loop </summary>
+        public float NotAsGoodRank;
+    }
 
     /// <summary> Swaps between true and false each time it is read. This allows the path taken to be more evenly distributed. </summary>
-    public bool goVertical
+    private bool goVertical
     {
         get
         {
@@ -40,46 +40,46 @@ public class TileNeighbor
     }
     private bool _goVertical = false;
 
+    public PlayerStats Owner { get; set; }
 
-    public TileNeighbor(NesScripts.Controls.PathFind.Point tilePosition)
+    public TilePathManhattan(PlayerStats owner)
     {
-        position = tilePosition;
+        this.Owner = owner;
     }
 
     public Tile TowardsWeighted(Tile tile)
     {
-        List<Tile> WeightedTiles = tile.OwnedByPlayer.WeightedTiles;
+        List<Tile> WeightedTiles = Owner.WeightedTiles;
 
         if (WeightedTiles == null
         || WeightedTiles.Count == 0
-        || WeightedTiles.Any(t => t.Position == this.position)) // Don't move any population, we are a weighted tile
+        || WeightedTiles.Any(t => t.Position == tile.Position)) // Don't move any population, we are a weighted tile
         {
             return null;
         }
 
-        var tileToReinforce = pickWeightedTile(this.position, WeightedTiles);
+        var tileToReinforce = pickWeightedTile(tile.Position, WeightedTiles);
 
         if (tileToReinforce.xDiffAbs == tileToReinforce.yDiffAbs) // send along owned tiles or switch between side using goVertical
         {
-            return pickVerticalOrHorizontal(tileToReinforce, tile.OwnedByPlayer);
+            // narrow down to two tiles
+            var xTile = pickOnAxis(tileToReinforce.xDiff, tile.Neighbor.East, tile.Neighbor.West);
+            var yTile = pickOnAxis(tileToReinforce.yDiff, tile.Neighbor.North, tile.Neighbor.South);
+            return pickVerticalOrHorizontal(Owner, xTile, yTile);
         }
         else if (tileToReinforce.xDiffAbs > tileToReinforce.yDiffAbs) // send population along x
         {
-            return pickOnAxis(tileToReinforce.xDiff, this.East, this.West);
+            return pickOnAxis(tileToReinforce.xDiff, tile.Neighbor.East, tile.Neighbor.West);
         }
         else // send population along y
         {
-            return pickOnAxis(tileToReinforce.yDiff, this.North, this.South);
+            return pickOnAxis(tileToReinforce.yDiff, tile.Neighbor.North, tile.Neighbor.South);
         }
     }
 
     /// <summary> Vertical tile selection has the same distance to the weighted tile as Horizontal. Determine which one to pick. </summary>
-    private Tile pickVerticalOrHorizontal(TileCandiate tileToReinforce, PlayerStats populationOwner)
+    private Tile pickVerticalOrHorizontal(PlayerStats populationOwner, Tile xTile, Tile yTile)
     {
-        // narrow down to two tiles
-        var xTile = pickOnAxis(tileToReinforce.xDiff, this.East, this.West);
-        var yTile = pickOnAxis(tileToReinforce.yDiff, this.North, this.South);
-
         // narrow down to one tile
         bool noneOwned = xTile.OwnedByPlayer != populationOwner && xTile.OwnedByPlayer != populationOwner;
         bool allOwned = xTile.OwnedByPlayer == populationOwner && xTile.OwnedByPlayer == populationOwner;

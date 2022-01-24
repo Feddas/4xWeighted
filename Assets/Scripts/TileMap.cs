@@ -42,6 +42,19 @@ public class TileMap : MonoBehaviour
 
     // void Update() { }
 
+    public Tile TileAt(int x, int y)
+    {
+        if (x < 0 || x >= width
+        || y < 0 || y >= height)
+        {
+            return null;
+        }
+        else
+        {
+            return Tiles[x, y];
+        }
+    }
+
     /// <summary> Check all tiles on the map to see if they have any attacks that need to be resolved. Note, this should only be done once per tick. </summary>
     public void ResolveAttacks()
     {
@@ -54,7 +67,6 @@ public class TileMap : MonoBehaviour
     private void createTiles()
     {
         Tiles = new Tile[width, height];
-        //        walkable = new bool[width, height];
 
         for (int x = 0; x < width; ++x)
         {
@@ -62,8 +74,7 @@ public class TileMap : MonoBehaviour
             {
                 Tiles[x, y] = Instantiate(TilePrefab, this.transform, false);
                 Tiles[x, y].name = "Tile" + x + "-" + y;
-                Tiles[x, y].SetPosition(x, y);
-                //                walkable[x, y] = true;
+                Tiles[x, y].Initialize(x, y);
             }
         }
 
@@ -72,24 +83,14 @@ public class TileMap : MonoBehaviour
         {
             for (int y = 0; y < height; ++y)
             {
-                Tiles[x, y].Neighbor.North = TileAt(x, y + 1);
-                Tiles[x, y].Neighbor.South = TileAt(x, y - 1);
-                Tiles[x, y].Neighbor.East = TileAt(x + 1, y);
-                Tiles[x, y].Neighbor.West = TileAt(x - 1, y);
+                Tiles[x, y].SetNeighbors
+                (
+                    north: TileAt(x, y + 1),
+                    south: TileAt(x, y - 1),
+                    east: TileAt(x + 1, y),
+                    west: TileAt(x - 1, y)
+                );
             }
-        }
-    }
-
-    private Tile TileAt(int x, int y)
-    {
-        if (x < 0 || x >= width
-        || y < 0 || y >= height)
-        {
-            return null;
-        }
-        else
-        {
-            return Tiles[x, y];
         }
     }
 }

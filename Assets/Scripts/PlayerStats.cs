@@ -16,6 +16,7 @@ public class PlayerStats : ScriptableObject
     public int TotalPopulation;
     public List<Tile> WeightedTiles;
     public List<Tile> OccupiedTiles;
+    public ITilePath PathingStrategy;
 
     void OnEnable()
     {
@@ -23,5 +24,6 @@ public class PlayerStats : ScriptableObject
         TotalPopulation = 0;
         WeightedTiles = new List<Tile>();
         OccupiedTiles = new List<Tile>();
+        PathingStrategy = new TilePathManhattan(this);
     }
 }
