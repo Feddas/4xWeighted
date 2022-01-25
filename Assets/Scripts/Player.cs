@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     [Tooltip("Player this is performing actions. Such as tapping on a tiles Button component to set its weight.")]
     public PlayerStats ClickingPlayer = null;
 
+    private IEnumerable<PlayerStats> computerPlayers;
+
     void Awake()
     {
         if (Manager == null)
@@ -33,7 +35,8 @@ public class Player : MonoBehaviour
     void Start()
     {
         // save which player to use when tile buttons are clicked
-        ClickingPlayer = AllPlayers.FirstOrDefault(p => p.IsClicking);
+        ClickingPlayer = AllPlayers.FirstOrDefault(p => p.Contribution == PlayerStats.ContributionEnum.OnlyLocalPlayer);
+        computerPlayers = AllPlayers.Where(p => p.Contribution == PlayerStats.ContributionEnum.Computer);
 
         StartCoroutine(doTicks());
     }
@@ -58,6 +61,12 @@ public class Player : MonoBehaviour
             foreach (var player in AllPlayers)
             {
                 updateStats(player);
+            }
+
+            // run computer
+            foreach (var computer in computerPlayers)
+            {
+                computer.PathingStrategy.RunAi(AllTiles, computer);
             }
 
             // wait for tick interval

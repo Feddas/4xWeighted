@@ -6,6 +6,9 @@ using System.Linq;
 public interface ITilePath
 {
     Tile TowardsWeighted(Tile tile);
+
+    /// <summary> Ai choses which tiles to assign weight </summary>
+    void RunAi(TileMap allTiles, PlayerStats computer);
 }
 
 /// <summary>
@@ -47,13 +50,24 @@ public class TilePathManhattan : ITilePath
         this.Owner = owner;
     }
 
+    /// <summary> // TODO: click weight depending on board </summary>
+    public void RunAi(TileMap allTiles, PlayerStats computer)
+    {
+        // Choose tile
+        var tile = allTiles.TileAt(0, 0);
+
+        // update game board
+        var weight = TileWeight.Add(computer, tile, 1);
+        weight.UiUpdateDefenseOnly(computer);
+    }
+
     public Tile TowardsWeighted(Tile tile)
     {
-        List<Tile> WeightedTiles = Owner.WeightedTiles;
+        List<TileWeight> WeightedTiles = Owner.WeightedTiles;
 
         if (WeightedTiles == null
         || WeightedTiles.Count == 0
-        || WeightedTiles.Any(t => t.Position == tile.Position)) // Don't move any population, we are a weighted tile
+        || WeightedTiles.Any(t => t.Tile.Position == tile.Position)) // Don't move any population, we are a weighted tile
         {
             return null;
         }
@@ -123,29 +137,31 @@ public class TilePathManhattan : ITilePath
     /// <param name="source"></param>
     /// <param name="weightedTiles"></param>
     /// <returns></returns>
-    private TileCandiate pickWeightedTile(NesScripts.Controls.PathFind.Point source, List<Tile> weightedTiles)
+    private TileCandiate pickWeightedTile(NesScripts.Controls.PathFind.Point source, List<TileWeight> weightedTiles)
     {
         // get stats for all weighted tiles relative to the source tile
         List<TileCandiate> candiates = new List<TileCandiate>();
         TileCandiate currentCandiate = new TileCandiate();
+        Tile tile;
         int biggestPopulation = 0;
-        foreach (var tile in weightedTiles)
+        foreach (var weight in weightedTiles)
         {
+            tile = weight.Tile;
             currentCandiate = new TileCandiate();
             currentCandiate.xDiff = tile.Position.x - source.x;
             currentCandiate.yDiff = tile.Position.y - source.y;
             currentCandiate.xDiffAbs = Mathf.Abs(currentCandiate.xDiff);
             currentCandiate.yDiffAbs = Mathf.Abs(currentCandiate.yDiff);
             currentCandiate.DistanceToTile = currentCandiate.xDiffAbs + currentCandiate.yDiffAbs;
-            currentCandiate.WeightOnTile = tile.Weight.Current;
-            currentCandiate.PopulationWeighted = tile.TilePopulation / tile.Weight.Current; // divide by the weight to make the tile look like it needs population
-            currentCandiate.NotAsGoodRank = (tile.TilePopulation * tile.Weight.Current) / currentCandiate.DistanceToTile;
+            currentCandiate.WeightOnTile = weight.Current;
+            currentCandiate.PopulationWeighted = tile.TilePopulation / weight.Current; // divide by the weight to make the tile look like it needs population
+            currentCandiate.NotAsGoodRank = (tile.TilePopulation * weight.Current) / currentCandiate.DistanceToTile;
             candiates.Add(currentCandiate);
 
             // track which weighted tile has the biggest population
             if (currentCandiate.PopulationWeighted > biggestPopulation)
             {
-                biggestPopulation = (tile.TilePopulation * tile.Weight.Current);
+                biggestPopulation = (tile.TilePopulation * weight.Current);
             }
         }
 

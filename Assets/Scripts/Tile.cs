@@ -57,7 +57,6 @@ public class Tile : MonoBehaviour
     [Tooltip("Population sent to this tile from another tile with the same owner.")]
     public int TileReinforcements;
 
-    public TileWeight Weight;
     public TileCombat Combat;
 
     // void Awake() { }
@@ -79,11 +78,6 @@ public class Tile : MonoBehaviour
 
     // void Update() { }
 
-    void OnValidate()
-    {
-        Weight.UpdateWeight(OwnedByPlayer, this);
-    }
-
     public void DefendAdd(PlayerStats attacker, int armySize)
     {
         Combat.AddAttack(OwnedByPlayer, attacker, armySize);
@@ -97,13 +91,12 @@ public class Tile : MonoBehaviour
     /// <summary> Called when the tile Button component is clicked </summary>
     public void NextWeight()
     {
-        NextWeight(Player.Manager.ClickingPlayer);
-    }
+        // determine who is clicking
+        var clickingPlayer = Player.Manager.ClickingPlayer;
 
-    /// <summary> Allows NextWeight to be called by the non-Clicking players, such as AI </summary>
-    public void NextWeight(PlayerStats player)
-    {
-        Weight.NextWeight(player, this);
+        // register the click
+        var weight = TileWeight.Next(clickingPlayer, this);
+        weight.UiUpdateAll(clickingPlayer);
     }
 
     /// <summary> What this tile does on every Update tick </summary>
@@ -116,12 +109,6 @@ public class Tile : MonoBehaviour
         }
 
         TilePopulation++;
-    }
-
-    /// <summary> A different tile has called Weight.UpdateWeight(). This tile needs to show what fraction of the total weight is left for this tile. </summary>
-    public void RefreshIconWeight(PlayerStats player)
-    {
-        Ui.IconWeight.fillAmount = (float)Weight.Current / player.TotalWeights;
     }
 
     /// <summary> Population calculation are finished, display the population of this tile </summary>

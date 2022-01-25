@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerIndex: 0
   Color: {r: 0, g: 1, b: 0, a: 1}
-  IsClicking: 1
+  Contribution: 1
   TotalWeights: 0
   TotalPopulation: 0
   WeightedTiles: []

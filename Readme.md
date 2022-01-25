@@ -1,13 +1,12 @@
-Version of Travian where attacks are orchestrated quickly via weighted tiles
+Simplified Travian-ish clone where attacks are orchestrated quickly via weighted tiles
 
 # Details
 
-Each tile can have 3 different weight values
+Each tile can have only 2 different weight values. Yet, the code enabled any number of weight values, such as double or triple weight.
 
-0 - no weight, thie tile is only a troop factory
-1 - some weight, troops rally here
-2 - double weight, twice as many troops rally here
+- 0 - no weight, thie tile is only a troop factory
+- 1 - some weight, troops rally here
 
-# Reference
+# Origin
 
-Additionaly details can be found while logged in on @gmail as BouncyLasers go to https://docs.google.com/document/d/1xw-1d4p7ml77srkZKUjIYoC2_Vk-4vgF1hTXMHL6hw8
+"Redirecting troops is a hassle in NP2. There needs to be a way to automate it." - Peter Maresh
