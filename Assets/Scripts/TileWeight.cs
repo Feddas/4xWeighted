@@ -99,10 +99,11 @@ public class TileWeight
     public void UiUpdateDefenseOnly(PlayerStats player)
     {
         // tiles the player occupies and the clicking player has no weight on
+        bool justWatching = Player.Manager.ClickingPlayer == null;           // true when the clicking player has been eliminated
         var playersUncontestedDefense = player.WeightedTiles
-            .Where(wt => wt.Tile.OwnedByPlayer == player    // is occupied by this computer player
-            && Player.Manager.ClickingPlayer.WeightedTiles  // & clicking player does not have a weight here 
-            .All(cp => cp.Tile != wt.Tile));                // note: a join might be more performant https://docs.microsoft.com/en-us/dotnet/csharp/linq/perform-left-outer-joins
+            .Where(wt => wt.Tile.OwnedByPlayer == player                     // is occupied by this computer player
+            && (justWatching || Player.Manager.ClickingPlayer.WeightedTiles  // & clicking player does not have a weight here 
+            .All(cp => cp.Tile != wt.Tile)));                                // note: a join might be more performant https://docs.microsoft.com/en-us/dotnet/csharp/linq/perform-left-outer-joins
         foreach (var weight in playersUncontestedDefense)
         {
             this.Tile.Ui.IconWeight.color = player.Color;

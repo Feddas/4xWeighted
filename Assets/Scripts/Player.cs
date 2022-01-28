@@ -34,14 +34,18 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        // save which player to use when tile buttons are clicked
-        ClickingPlayer = AllPlayers.FirstOrDefault(p => p.Contribution == PlayerStats.ContributionEnum.OnlyLocalPlayer);
-        computerPlayers = AllPlayers.Where(p => p.Contribution == PlayerStats.ContributionEnum.Computer);
-
+        setPlayerGroups();
         StartCoroutine(doTicks());
     }
 
     // void Update() { }
+
+    private void setPlayerGroups()
+    {
+        // save which player to use when tile buttons are clicked
+        ClickingPlayer = AllPlayers.FirstOrDefault(p => p.Contribution == PlayerStats.ContributionEnum.OnlyLocalPlayer);
+        computerPlayers = AllPlayers.Where(p => p.Contribution == PlayerStats.ContributionEnum.Computer);
+    }
 
     private IEnumerator doTicks()
     {
@@ -93,6 +97,11 @@ public class Player : MonoBehaviour
     /// <summary> Queues all tiles occupied by a player to update population visuals on all tiles </summary>
     private void updateStats(PlayerStats player)
     {
+        if (player.OccupiedTiles.Count == 0)
+        {
+            StartCoroutine(remove(player));
+        }
+
         // update stats
         player.TotalPopulation = player.OccupiedTiles.Sum(t => t.TilePopulation + t.TileReinforcements);
 
@@ -129,5 +138,29 @@ public class Player : MonoBehaviour
 
         // population was depleted from a reinforce or attack
         origin.TilePopulation = 0;
+    }
+
+    /// <summary> Removes a player from the game during the next Update frame </summary>
+    private IEnumerator remove(PlayerStats player)
+    {
+        yield return null;
+        AllPlayers.Remove(player);
+        Debug.Log(player.name + " was removed from the game.");
+
+        // continue with remaining players?
+        if (AllPlayers.Count < 2) // play new round
+        {
+            StopAllCoroutines();
+            yield return null;
+            yield return null;
+            UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            Resources.UnloadUnusedAssets();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        }
+        else // continue
+        {
+            setPlayerGroups();
+            yield return null;
+        }
     }
 }
