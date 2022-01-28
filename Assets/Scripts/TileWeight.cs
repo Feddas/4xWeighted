@@ -6,7 +6,7 @@ using System.Linq;
 [System.Serializable]
 public class TileWeight
 {
-    public Tile Tile { get; private set; }
+    public TileStatus Tile { get; private set; }
 
     [Tooltip("Current amount of weight put on this tile")]
     [Range(0, 2)]
@@ -16,7 +16,7 @@ public class TileWeight
 
     /// <summary> Adds a TileWeight to a player </summary>
     /// <param name="weight"> throws an error if set to 0 </param>
-    private TileWeight(PlayerStats player, Tile tile, int weight)
+    private TileWeight(PlayerStats player, TileStatus tile, int weight)
     {
         // guard against invalid weights
         if (weight == 0)
@@ -33,7 +33,7 @@ public class TileWeight
 
     /// <summary> Adds a weight if it doesn't already exist </summary>
     /// <param name="newWeight"> Allows newWeight to be set by the non-Clicking players, such as AI </param>
-    public static TileWeight Add(PlayerStats toPlayer, Tile tile, int newWeight)
+    public static TileWeight Add(PlayerStats toPlayer, TileStatus tile, int newWeight)
     {
         var weight = toPlayer.WeightedTiles.FirstOrDefault(wt => wt.Tile == tile);
         if (weight == null && newWeight == 0)
@@ -55,7 +55,7 @@ public class TileWeight
     }
 
     /// <summary> Weight cycles from 0 to 1 to 2 back to 0 </summary>
-    public static TileWeight Next(PlayerStats forPlayer, Tile tile)
+    public static TileWeight Next(PlayerStats forPlayer, TileStatus tile)
     {
         var weight = forPlayer.WeightedTiles.FirstOrDefault(wt => wt.Tile == tile);
         if (weight == null)  // this tile just gained its first weight
@@ -64,7 +64,7 @@ public class TileWeight
         }
         else
         {
-            weight.Current = (weight.Current + 1) % 3;
+            weight.Current = (weight.Current + 1) % 2; // 2 - toggles weights. 3 - allows a double weight. 4 - allows triple weight.
             weight.updateWeight(forPlayer);
         }
         return weight;

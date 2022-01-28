@@ -139,7 +139,7 @@ Camera:
   m_GameObject: {fileID: 501979016}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -150,9 +150,9 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
-  m_Depth: -1
+  m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -294,6 +294,7 @@ GameObject:
   m_Component:
   - component: {fileID: 991922580}
   - component: {fileID: 991922581}
+  - component: {fileID: 991922582}
   m_Layer: 5
   m_Name: Map
   m_TagString: Untagged
@@ -332,8 +333,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TilePrefab: {fileID: 114669714927198506, guid: 5bcf0fcf46e9faa4495ef3556d731e10,
     type: 2}
-  width: 4
-  height: 6
+  width: 8
+  height: 12
   SpawnLocations:
   - ForPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
     StartingArmySize: 10
@@ -343,6 +344,29 @@ MonoBehaviour:
     StartingArmySize: 10
     xPosition: 2
     yPosition: 4
+--- !u!114 &991922582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 991922579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -2095666955, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 2
+  m_StartAxis: 1
+  m_CellSize: {x: 100, y: 100}
+  m_Spacing: {x: 0, y: 0}
+  m_Constraint: 0
+  m_ConstraintCount: 2
 --- !u!1 &1911578011
 GameObject:
   m_ObjectHideFlags: 0

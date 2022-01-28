@@ -29,7 +29,7 @@ public class PlayerStats : ScriptableObject
     public int TotalWeights;
     public int TotalPopulation;
     public List<TileWeight> WeightedTiles;
-    public List<Tile> OccupiedTiles;
+    public List<TileStatus> OccupiedTiles;
     public ITilePath PathingStrategy;
 
     void OnEnable()
@@ -37,7 +37,7 @@ public class PlayerStats : ScriptableObject
         TotalWeights = 0;
         TotalPopulation = 0;
         WeightedTiles = new List<TileWeight>();
-        OccupiedTiles = new List<Tile>();
+        OccupiedTiles = new List<TileStatus>();
         PathingStrategy = new TilePathManhattan(this);
     }
 }

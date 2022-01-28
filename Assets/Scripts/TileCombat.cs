@@ -39,7 +39,7 @@ public class TileCombat
     }
 
     /// <summary> Resolve all pendingAttacks on this tile. </summary>
-    public void Resolve(Tile tile)
+    public void Resolve(TileStatus tile)
     {
         // Add reinforcements newly added from neighboring tiles to this tile
         tile.TilePopulation += tile.TileReinforcements;
@@ -79,7 +79,7 @@ public class TileCombat
     }
 
     /// <summary> Transfers the ownership of a tile from its current owner to ownerNew </summary>
-    private void transferOwner(PlayerStats ownerNew, Tile tile)
+    private void transferOwner(PlayerStats ownerNew, TileStatus tile)
     {
         // remove old owner
         if (tile.OwnedByPlayer != null)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(UnityEngine.UI.GridLayoutGroup))]
 public class TileMap : MonoBehaviour
 {
     [System.Serializable]
@@ -13,19 +14,46 @@ public class TileMap : MonoBehaviour
         public int yPosition;
     }
 
-    public Tile TilePrefab;
+    public TileStatus TilePrefab;
     public int width = 3;
     public int height = 4;
-    public Tile[,] Tiles;
+    public TileStatus[,] Tiles;
     public List<SpawnLocation> SpawnLocations;
+
+    private UnityEngine.UI.GridLayoutGroup gridLayout
+    {
+        get
+        {
+            if (_gridLayout == null)
+            {
+                _gridLayout = this.GetComponent<UnityEngine.UI.GridLayoutGroup>();
+            }
+            return _gridLayout;
+        }
+    }
+    private UnityEngine.UI.GridLayoutGroup _gridLayout;
+
+    private Vector2 canvasSize
+    {
+        get
+        {
+            if (_canvasSize == null)
+            {
+                _canvasSize = this.GetComponentInParent<Canvas>().transform as RectTransform;
+            }
+            return _canvasSize.sizeDelta;
+        }
+    }
+    private RectTransform _canvasSize;
+
 
     void Awake()
     {
         createTiles();
 
         // spawn players
-        Tile tile;
-        HashSet<Tile> startingTiles = new HashSet<Tile>(); // HashSet used in hopes of duplicates automatically being removed
+        TileStatus tile;
+        HashSet<TileStatus> startingTiles = new HashSet<TileStatus>(); // HashSet used in hopes of duplicates automatically being removed
         foreach (var spawn in SpawnLocations)
         {
             tile = TileAt(spawn.xPosition, spawn.yPosition);
@@ -40,9 +68,16 @@ public class TileMap : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        gridLayout.startCorner = UnityEngine.UI.GridLayoutGroup.Corner.LowerLeft;
+        gridLayout.startAxis = UnityEngine.UI.GridLayoutGroup.Axis.Vertical;
+        gridLayout.cellSize = new Vector2(canvasSize.x / width, canvasSize.y / height);
+    }
+
     // void Update() { }
 
-    public Tile TileAt(int x, int y)
+    public TileStatus TileAt(int x, int y)
     {
         if (x < 0 || x >= width
         || y < 0 || y >= height)
@@ -66,7 +101,7 @@ public class TileMap : MonoBehaviour
 
     private void createTiles()
     {
-        Tiles = new Tile[width, height];
+        Tiles = new TileStatus[width, height];
 
         for (int x = 0; x < width; ++x)
         {

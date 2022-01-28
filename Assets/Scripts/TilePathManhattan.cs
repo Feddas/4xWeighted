@@ -5,7 +5,7 @@ using System.Linq;
 
 public interface ITilePath
 {
-    Tile TowardsWeighted(Tile tile);
+    TileStatus TowardsWeighted(TileStatus tile);
 
     /// <summary> Ai choses which tiles to assign weight </summary>
     void RunAi(TileMap allTiles, PlayerStats computer);
@@ -61,7 +61,7 @@ public class TilePathManhattan : ITilePath
         weight.UiUpdateDefenseOnly(computer);
     }
 
-    public Tile TowardsWeighted(Tile tile)
+    public TileStatus TowardsWeighted(TileStatus tile)
     {
         List<TileWeight> WeightedTiles = Owner.WeightedTiles;
 
@@ -92,7 +92,7 @@ public class TilePathManhattan : ITilePath
     }
 
     /// <summary> Vertical tile selection has the same distance to the weighted tile as Horizontal. Determine which one to pick. </summary>
-    private Tile pickVerticalOrHorizontal(PlayerStats populationOwner, Tile xTile, Tile yTile)
+    private TileStatus pickVerticalOrHorizontal(PlayerStats populationOwner, TileStatus xTile, TileStatus yTile)
     {
         // narrow down to one tile
         bool noneOwned = xTile.OwnedByPlayer != populationOwner && xTile.OwnedByPlayer != populationOwner;
@@ -117,7 +117,7 @@ public class TilePathManhattan : ITilePath
     /// <param name="onPositive"></param>
     /// <param name="onNegative"></param>
     /// <returns></returns>
-    private Tile pickOnAxis(int magnitude, Tile onPositive, Tile onNegative)
+    private TileStatus pickOnAxis(int magnitude, TileStatus onPositive, TileStatus onNegative)
     {
         if (magnitude > 0)
         {
@@ -142,7 +142,7 @@ public class TilePathManhattan : ITilePath
         // get stats for all weighted tiles relative to the source tile
         List<TileCandiate> candiates = new List<TileCandiate>();
         TileCandiate currentCandiate = new TileCandiate();
-        Tile tile;
+        TileStatus tile;
         int biggestPopulation = 0;
         foreach (var weight in weightedTiles)
         {

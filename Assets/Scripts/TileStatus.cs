@@ -5,17 +5,17 @@ using System.Linq;
 
 /// <summary> Single tile cell on the map </summary>
 [RequireComponent(typeof(RectTransform))]
-public class Tile : MonoBehaviour
+public class TileStatus : MonoBehaviour
 {
     public class TileNeighbor
     {
         /// <summary> Neighboring tiles that this tile can move its population onto </summary>
-        public Tile North;
-        public Tile South;
-        public Tile East;
-        public Tile West;
+        public TileStatus North;
+        public TileStatus South;
+        public TileStatus East;
+        public TileStatus West;
 
-        public TileNeighbor(Tile north, Tile south, Tile east, Tile west)
+        public TileNeighbor(TileStatus north, TileStatus south, TileStatus east, TileStatus west)
         {
             North = north;
             South = south;
@@ -127,7 +127,7 @@ public class Tile : MonoBehaviour
         (this.transform as RectTransform).anchoredPosition = new Vector2(x * 100, y * 100);
     }
 
-    public void SetNeighbors(Tile north, Tile south, Tile east, Tile west)
+    public void SetNeighbors(TileStatus north, TileStatus south, TileStatus east, TileStatus west)
     {
         Neighbor = new TileNeighbor(north, south, east, west);
     }

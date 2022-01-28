@@ -105,9 +105,9 @@ public class Player : MonoBehaviour
 
     /// <summary> Moves population on origin towards a weight </summary>
     /// <param name="origin"></param>
-    private void moveFrom(Tile origin, PlayerStats player)
+    private void moveFrom(TileStatus origin, PlayerStats player)
     {
-        Tile destination = player.PathingStrategy.TowardsWeighted(origin);
+        TileStatus destination = player.PathingStrategy.TowardsWeighted(origin);
 
         // do nothing
         if (destination == null) // this tile is weighted or no weights exist
