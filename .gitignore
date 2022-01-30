@@ -5,6 +5,8 @@
 *.pidb
 *.userprefs
 /Temp/*
+/Logs/*
+/UserSettings/*
 
 # Visual Studio & its tools
 *.sln
@@ -15,6 +17,7 @@
 *.DotSettings
 *.vs
 *.vscode
+*.vsconfig
 
 /Builds/*
 DontCommit*
