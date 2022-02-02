@@ -5,10 +5,9 @@ using System.Linq;
 
 public interface ITilePath
 {
-    TileStatus TowardsWeighted(TileStatus tile);
+    public PlayerStats Owner { get; set; }
 
-    /// <summary> Ai choses which tiles to assign weight </summary>
-    void RunAi(TileMap allTiles, PlayerStats computer);
+    TileStatus TowardsWeighted(TileStatus tile);
 }
 
 /// <summary>
@@ -48,17 +47,6 @@ public class TilePathManhattan : ITilePath
     public TilePathManhattan(PlayerStats owner)
     {
         this.Owner = owner;
-    }
-
-    /// <summary> // TODO: click weight depending on board </summary>
-    public void RunAi(TileMap allTiles, PlayerStats computer)
-    {
-        // Choose tile
-        var tile = allTiles.TileAt(0, 0);
-
-        // update game board
-        var weight = TileWeight.Add(computer, tile, 1);
-        weight.UiUpdateDefenseOnly(computer);
     }
 
     public TileStatus TowardsWeighted(TileStatus tile)

@@ -31,13 +31,15 @@ public class PlayerStats : ScriptableObject
     public List<TileWeight> WeightedTiles;
     public List<TileStatus> OccupiedTiles;
     public ITilePath PathingStrategy;
+    public IAi Ai;
 
-    void OnEnable()
+    public void Reset() // Note: don't use OnEnable here as we want this code called when a 2nd scene is loaded.
     {
         TotalWeights = 0;
         TotalPopulation = 0;
         WeightedTiles = new List<TileWeight>();
         OccupiedTiles = new List<TileStatus>();
         PathingStrategy = new TilePathManhattan(this);
+        Ai = new AiRandom(this);
     }
 }

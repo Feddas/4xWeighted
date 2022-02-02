@@ -21,3 +21,9 @@
 
 /Builds/*
 DontCommit*
+
+# LFS
+/zipStruct/*
+/RawArt/*
+/Assets/Art/IconLfs/**
+!/Assets/Art/IconLfs/**/*.meta

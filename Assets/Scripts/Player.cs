@@ -30,6 +30,11 @@ public class Player : MonoBehaviour
         {
             throw new System.Exception("More than one PlayerManager! " + this.name + " vs " + Manager.name);
         }
+
+        foreach (var player in AllPlayers)
+        {
+            player.Reset();
+        }
     }
 
     void Start()
@@ -70,7 +75,7 @@ public class Player : MonoBehaviour
             // run computer
             foreach (var computer in computerPlayers)
             {
-                computer.PathingStrategy.RunAi(AllTiles, computer);
+                computer.Ai.SolveTick(AllTiles);
             }
 
             // wait for tick interval
@@ -150,11 +155,8 @@ public class Player : MonoBehaviour
         // continue with remaining players?
         if (AllPlayers.Count < 2) // play new round
         {
+            yield return null;
             StopAllCoroutines();
-            yield return null;
-            yield return null;
-            UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
-            Resources.UnloadUnusedAssets();
             UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
         }
         else // continue
