@@ -96,7 +96,7 @@ public class TileStatus : MonoBehaviour
 
         // register the click
         var weight = TileWeight.Next(clickingPlayer, this);
-        weight.UiUpdateAll(clickingPlayer);
+        weight.UiUpdateClickingPlayer(clickingPlayer);
     }
 
     /// <summary> What this tile does on every Update tick </summary>

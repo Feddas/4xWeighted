@@ -14,7 +14,7 @@ public class TileWeight
 
     private int lastWeight = 0;
 
-    /// <summary> Adds a TileWeight to a player </summary>
+    /// <summary> Constructor that adds a TileWeight to a player </summary>
     /// <param name="weight"> throws an error if set to 0 </param>
     private TileWeight(PlayerStats player, TileStatus tile, int weight)
     {
@@ -70,44 +70,58 @@ public class TileWeight
         return weight;
     }
 
-    public void UiUpdateAll(PlayerStats player)
+    /// <summary> Updates the UI specificially for the clickingplayer </summary>
+    public void UiUpdateClickingPlayer(PlayerStats clickingPlayer)
     {
         // update Ui
         if (this.Current != 0)
         {
-            this.Tile.Ui.IconWeight.color = player.Color;
-        }
-        else
-        {
-            this.Tile.Ui.IconWeight.fillAmount = 0;
+            this.Tile.Ui.IconWeight.color = clickingPlayer.Color;
         }
 
         // update all weighted icons
-        foreach (var weight in player.WeightedTiles)
+        foreach (var weight in clickingPlayer.WeightedTiles)
         {
-            refreshIconWeight(player, weight);
+            weight.UpdateUi(clickingPlayer);
         }
     }
 
-    /// <summary>
-    /// Shows weights only if the supplied player occupies the tiles and ClickingPlayer does not have weights there
-    /// Functional test: Set computer weight to a specific tile. Click that same tile. Wait for that tile to be transfered to the computer.
-    ///       EXPECTED: Computer should not get weight icon when it finally captures the tile.
-    ///       EXPECTED: When clicking the tile to remove the clicking players weight, computer should now get weight icon
-    /// </summary>
-    /// <param name="player"></param>
-    public void UiUpdateDefenseOnly(PlayerStats player)
+    /// <summary> A tile has called TileWeight.updateWeight(). Update every weighted tile for a player to show what fraction of the total weight it uses. </summary>
+    /// <summary> Set tile to a specific player and show what fraction of the total weight this uses. </summary>
+    public void UpdateUi(PlayerStats player)
     {
-        // tiles the player occupies and the clicking player has no weight on
-        bool justWatching = Player.Manager.ClickingPlayer == null;           // true when the clicking player has been eliminated
-        var playersUncontestedDefense = player.WeightedTiles
-            .Where(wt => wt.Tile.OwnedByPlayer == player                     // is occupied by this computer player
-            && (justWatching || Player.Manager.ClickingPlayer.WeightedTiles  // & clicking player does not have a weight here 
-            .All(cp => cp.Tile != wt.Tile)));                                // note: a join might be more performant https://docs.microsoft.com/en-us/dotnet/csharp/linq/perform-left-outer-joins
-        foreach (var weight in playersUncontestedDefense)
+        if (Player.Manager.ClickingPlayer != player // The clicking player can always update the UI of any tile, other players have limited access
+            && this.Tile.OwnedByPlayer != player // A computers weight only shows UI if the computer also owns the tile
+            && this.Tile.Ui.IconWeight.color != Player.Manager.ClickingPlayer.Color) // Ensure a tile owned and weighted by the computer does not override the clicking players weight
         {
-            this.Tile.Ui.IconWeight.color = player.Color;
-            refreshIconWeight(player, weight);
+            return;
+        }
+
+        this.Tile.Ui.IconWeight.color = player.Color;
+        this.Tile.Ui.IconWeight.fillAmount = (float)this.Current / player.TotalWeights;
+    }
+
+    /// <summary> Ensures another player can color and use the weight icon </summary>
+    public void RemoveUi(PlayerStats player)
+    {
+        if (this.Tile.Ui.IconWeight.color != player.Color) // UI is already not being shown for this player
+        {
+            return;
+        }
+
+        this.Tile.Ui.IconWeight.color = Color.clear;
+        this.Tile.Ui.IconWeight.fillAmount = 0;
+    }
+
+    public override string ToString()
+    {
+        if (Tile != null)
+        {
+            return Current + " on " + Tile.ToString();
+        }
+        else
+        {
+            return Current + " no tile";
         }
     }
 
@@ -124,17 +138,12 @@ public class TileWeight
         if (Current == 0) // this tile just lost its weight
         {
             player.WeightedTiles.Remove(this);
+            this.RemoveUi(player);
         }
 
         // change TotalWeights
         int weightDelta = Current - lastWeight;
         player.TotalWeights += weightDelta;
         lastWeight = Current;
-    }
-
-    /// <summary> A tile has called TileWeight.updateWeight(). Update every weighted tile for a player to show what fraction of the total weight it uses. </summary>
-    private void refreshIconWeight(PlayerStats player, TileWeight weight)
-    {
-        weight.Tile.Ui.IconWeight.fillAmount = (float)weight.Current / player.TotalWeights;
     }
 }

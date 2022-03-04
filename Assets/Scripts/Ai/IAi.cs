@@ -11,15 +11,18 @@ public interface IAi
     public void SolveTick(TileMap allTiles);
 }
 
+/// <summary> AI weighs a random cell every 10 ticks </summary>
 public class AiRandom : IAi
 {
-    private int computerTickSkipper = 10;
-
     public PlayerStats Owner { get; set; }
 
-    public AiRandom(PlayerStats owner)
+    private System.Random rnd = new System.Random(42);
+    private int computerTickSkipper = 10;
+
+    public AiRandom(PlayerStats owner, int seed = 42)
     {
         this.Owner = owner;
+        this.rnd = new System.Random(seed);
     }
 
     public void SolveTick(TileMap allTiles)
@@ -29,19 +32,18 @@ public class AiRandom : IAi
         computerTickSkipper = 0;
 
         // disable half of the existing weights
-        int halfOfWeighted = (Owner.WeightedTiles.Count + 1) / 2;
-        foreach (var oldWeight in Owner.WeightedTiles.OrderBy(wt => Random.value).Take(halfOfWeighted))
+        int halfOfWeighted = (Owner.WeightedTiles.Count) / 2; // get to two weights, then randomly remove one of the two weights
+        foreach (var oldWeight in Owner.WeightedTiles.OrderBy(wt => rnd.Next()).Take(halfOfWeighted))
         {
             TileWeight.Add(Owner, oldWeight.Tile, 0);
             Debug.Log("AI removed " + oldWeight.Tile.name);
         }
 
         // Choose new tile
-        var tile = allTiles.TileAt(Random.Range(0, allTiles.width), Random.Range(0, allTiles.height));
+        var tile = allTiles.TileAt(rnd.Next(0, allTiles.width), rnd.Next(0, allTiles.height));
 
         // update game board
         var weight = TileWeight.Add(Owner, tile, 1);
-        weight.UiUpdateDefenseOnly(Owner);
-        Debug.Log("AI added " + weight.Tile.name);
+        Debug.Log("AI added " + weight);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [CreateAssetMenu()]
 public class PlayerStats : ScriptableObject
@@ -40,6 +41,32 @@ public class PlayerStats : ScriptableObject
         WeightedTiles = new List<TileWeight>();
         OccupiedTiles = new List<TileStatus>();
         PathingStrategy = new TilePathManhattan(this);
-        Ai = new AiRandom(this);
+        Ai = new AiRandom(this, Random.Range(1, 1000)); // to test specific scenario, set second param to something like seed:42
+    }
+
+    /// <summary>
+    /// Shows weights only if the supplied player occupies the tiles and ClickingPlayer does not have weights there
+    /// Note: this function has only been tested when called by a computer player (non-clicking player).
+    /// 
+    /// Functional test: Set computer weight to a specific tile. Click that same tile. Wait for that tile to be transfered to the computer.
+    ///       1. Click tile you know will is the computers first weight in a way that also ensures the computer will still capture that tile.
+    ///       EXPECTED: That tile gets a weight icon colored to clicking player
+    ///       2. Wait for computer to capture that tile.
+    ///       EXPECTED: Computer should not get weight icon when it finally captures the tile as the clicking player has priority on that icon.
+    ///       3. Click that tile again to remove the clicking players weight icon.
+    ///       EXPECTED: Computer should now get weight icon
+    /// </summary>
+    public void UiUpdateIconWeight()
+    {
+        // tiles the player occupies and the clicking player has no weight on
+        bool justWatching = Player.Manager.ClickingPlayer == null;           // true when the clicking player has been eliminated
+        var playersUncontestedDefense = this.WeightedTiles
+            .Where(wt => wt.Tile.OwnedByPlayer == this                       // is occupied by this computer player
+            && (justWatching || Player.Manager.ClickingPlayer.WeightedTiles  // & clicking player does not have a weight here 
+            .All(cp => cp.Tile != wt.Tile)));                                // note: a join might be more performant https://docs.microsoft.com/en-us/dotnet/csharp/linq/perform-left-outer-joins
+        foreach (var weight in playersUncontestedDefense)
+        {
+            weight.UpdateUi(this);
+        }
     }
 }

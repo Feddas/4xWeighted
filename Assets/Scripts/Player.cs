@@ -76,6 +76,7 @@ public class Player : MonoBehaviour
             foreach (var computer in computerPlayers)
             {
                 computer.Ai.SolveTick(AllTiles);
+                computer.UiUpdateIconWeight();
             }
 
             // wait for tick interval
