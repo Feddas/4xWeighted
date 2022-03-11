@@ -9,6 +9,8 @@ public class TileStatus : MonoBehaviour
 {
     public class TileNeighbor
     {
+        public List<TileStatus> All { get; private set; }
+
         /// <summary> Neighboring tiles that this tile can move its population onto </summary>
         public TileStatus North;
         public TileStatus South;
@@ -21,6 +23,8 @@ public class TileStatus : MonoBehaviour
             South = south;
             East = east;
             West = west;
+            All = new List<TileStatus>() { North, South, East, West }
+                .Where(t => t != null).ToList();
         }
     }
 
