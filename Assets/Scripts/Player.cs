@@ -75,7 +75,7 @@ public class Player : MonoBehaviour
             // run computer
             foreach (var computer in computerPlayers)
             {
-                computer.Ai.SolveTick(AllTiles);
+                computer.AiSolveTick(AllTiles);
                 computer.UiUpdateIconWeight();
             }
 

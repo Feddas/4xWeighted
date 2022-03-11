@@ -44,6 +44,8 @@ public class TilePathManhattan : ITilePath
 
     public PlayerStats Owner { get; set; }
 
+    /// <summary> Owner must be set before TowardsWeighted() can be called </summary>
+    public TilePathManhattan() { }
     public TilePathManhattan(PlayerStats owner)
     {
         this.Owner = owner;

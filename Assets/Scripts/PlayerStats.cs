@@ -26,13 +26,19 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Exactly one player should have IsClicking marked true. This is a human player able to click tiles to set weights.")]
     public ContributionEnum Contribution = ContributionEnum.Computer;
 
+    [Tooltip("How troops move towards weighted tiles.")]
+    [B83.Unity.Attributes.MonoScript()]
+    public string PathingStrategyType;
+    public ITilePath PathingStrategy;
+
+    [Tooltip("How the computer decides its moves")]
+    public IAi Ai;
+
     [Header("Debug")]
     public int TotalWeights;
     public int TotalPopulation;
     public List<TileWeight> WeightedTiles;
     public List<TileStatus> OccupiedTiles;
-    public ITilePath PathingStrategy;
-    public IAi Ai;
 
     public void Reset() // Note: don't use OnEnable here as we want this code called when a 2nd scene is loaded.
     {
@@ -40,8 +46,16 @@ public class PlayerStats : ScriptableObject
         TotalPopulation = 0;
         WeightedTiles = new List<TileWeight>();
         OccupiedTiles = new List<TileStatus>();
-        PathingStrategy = new TilePathManhattan(this);
-        Ai = new AiRandom(this, Random.Range(1, 1000)); // to test specific scenario, set second param to something like seed:42
+        injectPathing();
+    }
+
+    public void AiSolveTick(TileMap allTiles)
+    {
+        if (Ai == null)
+        {
+            throw new System.Exception(this.name + " is trying to use an Ai. Ai can't be null.");
+        }
+        Ai.SolveTick(this, allTiles);
     }
 
     /// <summary>
@@ -68,5 +82,20 @@ public class PlayerStats : ScriptableObject
         {
             weight.UpdateUi(this);
         }
+    }
+
+    /// <summary> Created using type string supplied in PathingStrategyType </summary>
+    private void injectPathing()
+    {
+        // Use default if no pathing given
+        if (string.IsNullOrWhiteSpace(PathingStrategyType))
+        {
+            PathingStrategyType = "TilePathManhattan";
+        }
+
+        // Inject pathing type
+        System.Type pathingStrategyType = System.Reflection.Assembly.GetExecutingAssembly().GetType(PathingStrategyType);
+        PathingStrategy = System.Activator.CreateInstance(pathingStrategyType) as ITilePath;
+        PathingStrategy.Owner = this;
     }
 }

@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -13,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerIndex: 2
   Color: {r: 1, g: 0, b: 0, a: 1}
-  IsClicking: 0
+  Contribution: 2
+  PathingStrategyType: TilePathManhattan
+  Ai: {fileID: 11400000, guid: 1f734ac824a8d3d45887d73e30adac33, type: 2}
   TotalWeights: 0
   TotalPopulation: 0
   WeightedTiles: []

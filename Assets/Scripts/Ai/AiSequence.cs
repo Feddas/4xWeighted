@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-/// <summary> AI weighs cells based on sequence of actions </summary>
+/// <summary> AI weighs tiles based on sequence of actions </summary>
+[CreateAssetMenu()]
 public class AiSequence : IAi
 {
     /// <summary> How much weight tile X,Y should be set to at a specific tick </summary>
@@ -35,14 +36,7 @@ public class AiSequence : IAi
 
     private uint tickCount = 0;
 
-    public PlayerStats Owner { get; set; }
-
-    public AiSequence(PlayerStats owner)
-    {
-        this.Owner = owner;
-    }
-
-    public void SolveTick(TileMap allTiles)
+    public override void SolveTick(PlayerStats owner, TileMap allTiles)
     {
         tickCount++;
 
@@ -52,7 +46,7 @@ public class AiSequence : IAi
         {
             // add weight
             var tile = allTiles.TileAt(currentAction.TileX, currentAction.TileY);
-            var weight = TileWeight.Add(Owner, tile, currentAction.NewWeight);
+            var weight = TileWeight.Add(owner, tile, currentAction.NewWeight);
             Debug.Log("AI added " + weight);
 
             // check for other actions at this tickCount
