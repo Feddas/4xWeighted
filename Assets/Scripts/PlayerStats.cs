@@ -47,6 +47,7 @@ public class PlayerStats : ScriptableObject
         WeightedTiles = new List<TileWeight>();
         OccupiedTiles = new List<TileStatus>();
         injectPathing();
+        Ai?.Initialize(this);
     }
 
     public void AiSolveTick(TileMap allTiles)

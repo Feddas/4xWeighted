@@ -16,7 +16,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0, b: 0, a: 1}
   Contribution: 2
   PathingStrategyType: TilePathManhattan
-  Ai: {fileID: 11400000, guid: 1f734ac824a8d3d45887d73e30adac33, type: 2}
+  Ai: {fileID: 11400000, guid: ece981a8f80d47c49838ebb4d6478391, type: 2}
   TotalWeights: 0
   TotalPopulation: 0
   WeightedTiles: []

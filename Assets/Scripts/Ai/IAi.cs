@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public abstract class IAi : ScriptableObject
 {
+    public virtual void Initialize(PlayerStats owner) { }
+
     /// <summary> Ai choses which tiles to assign weight </summary>
     public abstract void SolveTick(PlayerStats owner, TileMap allTiles);
 }
