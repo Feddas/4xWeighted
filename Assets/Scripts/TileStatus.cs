@@ -120,8 +120,8 @@ public class TileStatus : MonoBehaviour
     {
         // update Ui
         Ui.TextPopulation.text = TilePopulation.ToString();
-        Ui.IconPopulation.fillAmount = OwnedByPlayer ?
-            (float)TilePopulation / OwnedByPlayer.TotalPopulation // set percent of total population
+        Ui.IconPopulation.fillAmount = OwnedByPlayer && OwnedByPlayer.LargestPopulation != 0 ?
+            (float)TilePopulation / OwnedByPlayer.LargestPopulation // set percent of population
             : 0; // this tile is unowned, neutral player doesn't have a TotalPopulation
     }
 

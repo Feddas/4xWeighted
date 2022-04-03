@@ -7,7 +7,8 @@ public interface ITilePath
 {
     public PlayerStats Owner { get; set; }
 
-    TileStatus TowardsWeighted(TileStatus tile);
+    /// <returns> tile <paramref name="source"/> should send its troops if it wants to support a weighted tile </returns>
+    TileStatus TowardsWeighted(TileStatus source);
 }
 
 /// <summary>
@@ -26,9 +27,6 @@ public class TilePathManhattan : ITilePath
         public int yDiff;
         public int xDiffAbs;
         public int yDiffAbs;
-
-        /// <summary> Haven't thought through the math on why this way doesn't work as well as the uncommented way. But, NotAsGoodRank does avoid the extra "biggestPopulation" loop </summary>
-        public float NotAsGoodRank;
     }
 
     /// <summary> Swaps between true and false each time it is read. This allows the path taken to be more evenly distributed. </summary>
@@ -51,33 +49,36 @@ public class TilePathManhattan : ITilePath
         this.Owner = owner;
     }
 
-    public TileStatus TowardsWeighted(TileStatus tile)
+    public TileStatus TowardsWeighted(TileStatus source)
     {
         List<TileWeight> WeightedTiles = Owner.WeightedTiles;
 
+        // do nothing
         if (WeightedTiles == null
         || WeightedTiles.Count == 0
-        || WeightedTiles.Any(t => t.Tile.Position == tile.Position)) // Don't move any population, we are a weighted tile
+        || WeightedTiles.Any(t => t.Tile.Position == source.Position)) // Don't move any population, we are a weighted tile
         {
             return null;
         }
 
-        var tileToReinforce = pickWeightedTile(tile.Position, WeightedTiles);
+        // choose final destination
+        var tileToReinforce = pickWeightedTile(source.Position, WeightedTiles);
 
+        // choose neighboring tile going towards destination
         if (tileToReinforce.xDiffAbs == tileToReinforce.yDiffAbs) // send along owned tiles or switch between side using goVertical
         {
             // narrow down to two tiles
-            var xTile = pickOnAxis(tileToReinforce.xDiff, tile.Neighbor.East, tile.Neighbor.West);
-            var yTile = pickOnAxis(tileToReinforce.yDiff, tile.Neighbor.North, tile.Neighbor.South);
+            var xTile = pickOnAxis(tileToReinforce.xDiff, source.Neighbor.East, source.Neighbor.West);
+            var yTile = pickOnAxis(tileToReinforce.yDiff, source.Neighbor.North, source.Neighbor.South);
             return pickVerticalOrHorizontal(Owner, xTile, yTile);
         }
         else if (tileToReinforce.xDiffAbs > tileToReinforce.yDiffAbs) // send population along x
         {
-            return pickOnAxis(tileToReinforce.xDiff, tile.Neighbor.East, tile.Neighbor.West);
+            return pickOnAxis(tileToReinforce.xDiff, source.Neighbor.East, source.Neighbor.West);
         }
         else // send population along y
         {
-            return pickOnAxis(tileToReinforce.yDiff, tile.Neighbor.North, tile.Neighbor.South);
+            return pickOnAxis(tileToReinforce.yDiff, source.Neighbor.North, source.Neighbor.South);
         }
     }
 
@@ -132,35 +133,50 @@ public class TilePathManhattan : ITilePath
         // get stats for all weighted tiles relative to the source tile
         List<TileCandiate> candiates = new List<TileCandiate>();
         TileCandiate currentCandiate = new TileCandiate();
-        TileStatus tile;
+        TileStatus candiateSource;
         int biggestPopulation = 0;
+        bool isAttack = false;
         foreach (var weight in weightedTiles)
         {
-            tile = weight.Tile;
+            candiateSource = weight.Tile;
             currentCandiate = new TileCandiate();
-            currentCandiate.xDiff = tile.Position.x - source.x;
-            currentCandiate.yDiff = tile.Position.y - source.y;
+
+            // manhattan distance from source to weight
+            currentCandiate.xDiff = candiateSource.Position.x - source.x;
+            currentCandiate.yDiff = candiateSource.Position.y - source.y;
             currentCandiate.xDiffAbs = Mathf.Abs(currentCandiate.xDiff);
             currentCandiate.yDiffAbs = Mathf.Abs(currentCandiate.yDiff);
             currentCandiate.DistanceToTile = currentCandiate.xDiffAbs + currentCandiate.yDiffAbs;
+
+            // weigh based soley on population
             currentCandiate.WeightOnTile = weight.Current;
-            currentCandiate.PopulationWeighted = tile.TilePopulation / weight.Current; // divide by the weight to make the tile look like it needs population
-            currentCandiate.NotAsGoodRank = (tile.TilePopulation * weight.Current) / currentCandiate.DistanceToTile;
+            isAttack = Owner != candiateSource.OwnedByPlayer;
+            currentCandiate.PopulationWeighted = isAttack
+                ? 0                                               // none of the sources population yet exists on the target
+                : candiateSource.TilePopulation / weight.Current; // divide by the weight to make the tile look like it needs population
             candiates.Add(currentCandiate);
 
             // track which weighted tile has the biggest population
             if (currentCandiate.PopulationWeighted > biggestPopulation)
             {
-                biggestPopulation = (tile.TilePopulation * weight.Current);
+                biggestPopulation = (candiateSource.TilePopulation * weight.Current);
             }
+        }
+
+        // candiates at 0 are top priority
+        var zeroCandiates = candiates.Where(c => c.PopulationWeighted == 0);
+        if (zeroCandiates.Count() > 0)
+        {
+            return zeroCandiates.OrderBy(c => c.DistanceToTile).FirstOrDefault(); ;
         }
 
         // rank the weighted tiles to determine which one needs population the most
         float topRank = 0;
+        int maxPopulation = (int)(1.5 * biggestPopulation); // double the biggest so it will still be reinforced if in small distances
         foreach (var candiate in candiates)
         {
             // reinforcements are favored by the most unpopulated weighted tile
-            float candiatesRank = (biggestPopulation - candiate.PopulationWeighted) / candiate.DistanceToTile;
+            float candiatesRank = (maxPopulation - candiate.PopulationWeighted) / candiate.DistanceToTile;
             //Debug.Log(source.ToString() + " Ranks unused of " + candiate.NotAsGoodRank.ToString("0.00")
             // + " vs " + candiatesRank.ToString("0.00") + " on frame " + Time.frameCount);
             if (candiatesRank > topRank)

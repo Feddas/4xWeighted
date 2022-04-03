@@ -34,11 +34,11 @@ public class PlayerStats : ScriptableObject
     [Tooltip("How the computer decides its moves")]
     public IAi Ai;
 
-    [Header("Debug")]
-    public int TotalWeights;
-    public int TotalPopulation;
-    public List<TileWeight> WeightedTiles;
-    public List<TileStatus> OccupiedTiles;
+    public int TotalWeights { get; set; }
+    public int TotalPopulation { get; set; }
+    public int LargestPopulation { get; set; }
+    public List<TileWeight> WeightedTiles { get; set; }
+    public List<TileStatus> OccupiedTiles { get; set; }
 
     public void Reset() // Note: don't use OnEnable here as we want this code called when a 2nd scene is loaded.
     {

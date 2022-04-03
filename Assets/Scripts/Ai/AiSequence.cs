@@ -34,6 +34,7 @@ public class AiSequence : IAi
         new WeightAction(4, 4, 4), // weigh tile 4,4 at tick 4
     };
 
+    [System.NonSerialized]
     private uint tickCount = 0;
 
     public override void SolveTick(PlayerStats owner, TileMap allTiles)

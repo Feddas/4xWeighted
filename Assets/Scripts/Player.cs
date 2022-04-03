@@ -103,13 +103,15 @@ public class Player : MonoBehaviour
     /// <summary> Queues all tiles occupied by a player to update population visuals on all tiles </summary>
     private void updateStats(PlayerStats player)
     {
-        if (player.OccupiedTiles.Count == 0)
+        if (player.OccupiedTiles.Count == 0) // remove player
         {
             StartCoroutine(remove(player));
+            return;
         }
 
         // update stats
         player.TotalPopulation = player.OccupiedTiles.Sum(t => t.TilePopulation + t.TileReinforcements);
+        player.LargestPopulation = player.OccupiedTiles.Max(t => t.TilePopulation + t.TileReinforcements);
 
         // Population moves finished, update Ui
         foreach (var tile in player.OccupiedTiles)
