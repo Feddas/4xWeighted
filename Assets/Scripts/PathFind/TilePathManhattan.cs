@@ -127,7 +127,7 @@ public class TilePathManhattan : ITilePath
     /// <param name="source"></param>
     /// <param name="weightedTiles"></param>
     /// <returns></returns>
-    private TileCandiate pickWeightedTile(NesScripts.Controls.PathFind.Point source, List<TileWeight> weightedTiles)
+    private TileCandiate pickWeightedTile(PathFind.Point source, List<TileWeight> weightedTiles)
     {
         // get stats for all weighted tiles relative to the source tile
         List<TileCandiate> candiates = new List<TileCandiate>();

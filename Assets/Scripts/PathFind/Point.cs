@@ -4,9 +4,11 @@
  *   
  * Author: Ronen Ness.
  * Since: 2016. 
+ * copied from https://github.com/RonenNess/UnityUtils/tree/master/Controls/PathFinding/2dTileBasedPathFinding
+ * alt:      https://github.com/Chris85bh/Navigation2D/blob/master/Assets/Navigation4Tilemap/Scripts/Navigation4Tilemap.cs 
 */
 
-namespace NesScripts.Controls.PathFind
+namespace PathFind
 {
     /// <summary>
     /// A 2d point on the grid

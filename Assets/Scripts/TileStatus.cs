@@ -45,7 +45,7 @@ public class TileStatus : MonoBehaviour
     }
 
     /// <summary> Where this tile is on the map </summary>
-    public NesScripts.Controls.PathFind.Point Position { get; private set; }
+    public PathFind.Point Position { get; private set; }
 
     /// <summary> Access to all neighboring tiles </summary>
     public TileNeighbor Neighbor { get; private set; }
@@ -127,7 +127,7 @@ public class TileStatus : MonoBehaviour
 
     public void SetPosition(int x, int y)
     {
-        Position = new NesScripts.Controls.PathFind.Point(x, y);
+        Position = new PathFind.Point(x, y);
         (this.transform as RectTransform).anchoredPosition = new Vector2(x * 100, y * 100);
     }
 
