@@ -11,14 +11,14 @@ public class AiRandom : IAi
 
     private IAi chosenAi;
 
-    public override void Initialize(PlayerStats owner)
+    public override void SolveTick(PlayerStats owner, PlayerStats enemy, TileMap allTiles)
     {
-        chosenAi = AiCanidates.OrderBy(wt => Random.value).First();
-        chosenAi.Initialize(owner);
-    }
+        // chose an AI only if one hasn't been chosen
+        if (chosenAi == null)
+        {
+            chosenAi = AiCanidates.OrderBy(wt => Random.value).First();
+        }
 
-    public override void SolveTick(PlayerStats owner, TileMap allTiles)
-    {
-        chosenAi.SolveTick(owner, allTiles);
+        chosenAi.SolveTick(owner, enemy, allTiles);
     }
 }

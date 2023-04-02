@@ -23,7 +23,7 @@ public class AiAnyTile : IAi
         this.rnd = new System.Random(seed);
     }
 
-    public override void SolveTick(PlayerStats owner, TileMap allTiles)
+    public override void SolveTick(PlayerStats owner, PlayerStats enemy, TileMap allTiles)
     {
         // re-evaluate AI every 10 ticks
         if (computerTickSkipper++ < 10) return;
@@ -42,6 +42,6 @@ public class AiAnyTile : IAi
 
         // update game board
         var weight = TileWeight.Add(owner, tile, 1);
-        Debug.Log("AI added " + weight);
+        // Debug.Log($"{Time.frameCount} AI {owner.name} added {weight}");
     }
 }

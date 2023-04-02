@@ -98,6 +98,13 @@ public class TileStatus : MonoBehaviour
         // determine who is clicking
         var clickingPlayer = Player.Manager.ClickingPlayer;
 
+        // if they've been defeated, start a new game
+        if (clickingPlayer == null)
+        {
+            Player.Manager.PlayNewRound();
+            return;
+        }
+
         // register the click
         var weight = TileWeight.Next(clickingPlayer, this);
         weight.UiUpdateClickingPlayer(clickingPlayer);

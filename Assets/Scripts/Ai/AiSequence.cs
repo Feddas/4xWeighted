@@ -37,7 +37,7 @@ public class AiSequence : IAi
     [System.NonSerialized]
     private uint tickCount = 0;
 
-    public override void SolveTick(PlayerStats owner, TileMap allTiles)
+    public override void SolveTick(PlayerStats owner, PlayerStats enemy, TileMap allTiles)
     {
         tickCount++;
 
@@ -48,7 +48,7 @@ public class AiSequence : IAi
             // add weight
             var tile = allTiles.TileAt(currentAction.TileX, currentAction.TileY);
             var weight = TileWeight.Add(owner, tile, currentAction.NewWeight);
-            Debug.Log("AI added " + weight);
+            // Debug.Log("AI added " + weight);
 
             // check for other actions at this tickCount
             Sequence.Remove(currentAction);

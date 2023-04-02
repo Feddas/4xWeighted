@@ -38,11 +38,31 @@ public class PlayerStats : ScriptableObject
     [Tooltip("How the computer decides its moves")]
     public IAi Ai;
 
+    [Header("Debug")]
+    [Tooltip("The player an AI is targeting")]
+    public PlayerStats Enemy;
+
     public int TotalWeights { get; set; }
     public int TotalPopulation { get; set; }
     public int LargestPopulation { get; set; }
     public List<TileWeight> WeightedTiles { get; set; }
     public List<TileStatus> OccupiedTiles { get; set; }
+
+    public void OnEnable()
+    {
+        if (Ai != null)
+        {
+            Ai.OnEnemyDefeated += newEnemy;
+        }
+    }
+
+    public void OnDisable()
+    {
+        if (Ai != null)
+        {
+            Ai.OnEnemyDefeated -= newEnemy;
+        }
+    }
 
     public void Reset() // Note: don't use OnEnable here as we want this code called when a 2nd scene is loaded.
     {
@@ -51,7 +71,7 @@ public class PlayerStats : ScriptableObject
         WeightedTiles = new List<TileWeight>();
         OccupiedTiles = new List<TileStatus>();
         injectPathing();
-        Ai?.Initialize(this);
+        Enemy = Ai?.GetEnemy(this);
     }
 
     public void AiSolveTick(TileMap allTiles)
@@ -60,7 +80,7 @@ public class PlayerStats : ScriptableObject
         {
             throw new System.Exception(this.name + " is trying to use an Ai. Ai can't be null.");
         }
-        Ai.SolveTick(this, allTiles);
+        Ai.SolveTick(this, Enemy, allTiles);
     }
 
     /// <summary>
@@ -102,5 +122,10 @@ public class PlayerStats : ScriptableObject
         System.Type pathingStrategyType = System.Reflection.Assembly.GetExecutingAssembly().GetType(PathingStrategyType);
         PathingStrategy = System.Activator.CreateInstance(pathingStrategyType) as ITilePath;
         PathingStrategy.Owner = this;
+    }
+
+    private void newEnemy()
+    {
+        Enemy = Ai?.GetEnemy(this);
     }
 }

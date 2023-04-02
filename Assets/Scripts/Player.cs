@@ -45,6 +45,12 @@ public class Player : MonoBehaviour
 
     // void Update() { }
 
+    public void PlayNewRound()
+    {
+        StopAllCoroutines();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+    }
+
     private void setPlayerGroups()
     {
         // save which player to use when tile buttons are clicked
@@ -159,8 +165,7 @@ public class Player : MonoBehaviour
         if (AllPlayers.Count < 2) // play new round
         {
             yield return null;
-            StopAllCoroutines();
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            PlayNewRound();
         }
         else // continue
         {
