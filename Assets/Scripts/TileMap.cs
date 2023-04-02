@@ -5,20 +5,12 @@ using UnityEngine;
 [RequireComponent(typeof(UnityEngine.UI.GridLayoutGroup))]
 public class TileMap : MonoBehaviour
 {
-    [System.Serializable]
-    public class SpawnLocation
-    {
-        public PlayerStats ForPlayer;
-        public int StartingArmySize = 10;
-        public int xPosition; // TODO: use Vector2Int
-        public int yPosition;
-    }
 
     public TileStatus TilePrefab;
     public int width = 3;
     public int height = 4;
     public TileStatus[,] Tiles;
-    public List<SpawnLocation> SpawnLocations;
+    public TileSpawn Spawner;
 
     private UnityEngine.UI.GridLayoutGroup gridLayout
     {
@@ -54,10 +46,11 @@ public class TileMap : MonoBehaviour
         // spawn players
         TileStatus tile;
         HashSet<TileStatus> startingTiles = new HashSet<TileStatus>(); // HashSet used in hopes of duplicates automatically being removed
-        foreach (var spawn in SpawnLocations)
+        Spawner.NewSpawnPositions(width, height);
+        foreach (var player in Player.Manager.AllPlayers)
         {
-            tile = TileAt(spawn.xPosition, spawn.yPosition);
-            tile.DefendAdd(spawn.ForPlayer, spawn.StartingArmySize);
+            tile = TileAt(Spawner.PositionOf[player]);
+            tile.DefendAdd(player, (int)(Spawner.StartingArmySize * player.Handicap));
             startingTiles.Add(tile);
         }
 
@@ -76,6 +69,11 @@ public class TileMap : MonoBehaviour
     }
 
     // void Update() { }
+
+    public TileStatus TileAt(Vector2Int vector2Int)
+    {
+        return TileAt(vector2Int.x, vector2Int.y);
+    }
 
     public TileStatus TileAt(int x, int y)
     {

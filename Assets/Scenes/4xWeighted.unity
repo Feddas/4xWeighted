@@ -316,6 +316,7 @@ MonoBehaviour:
   AllPlayers:
   - {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
   - {fileID: 11400000, guid: 71865c75784012d498d22ff964a76a1b, type: 2}
+  - {fileID: 11400000, guid: 0b642dbab4a672a498874142c52e43e4, type: 2}
   AllTiles: {fileID: 991922581}
   ClickingPlayer: {fileID: 0}
 --- !u!4 &916698323
@@ -387,15 +388,9 @@ MonoBehaviour:
     type: 3}
   width: 8
   height: 12
-  SpawnLocations:
-  - ForPlayer: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}
+  Spawner:
+    StrategyToUse: 1
     StartingArmySize: 10
-    xPosition: 1
-    yPosition: 1
-  - ForPlayer: {fileID: 11400000, guid: 71865c75784012d498d22ff964a76a1b, type: 2}
-    StartingArmySize: 10
-    xPosition: 2
-    yPosition: 4
 --- !u!114 &991922582
 MonoBehaviour:
   m_ObjectHideFlags: 0

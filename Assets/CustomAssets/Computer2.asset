@@ -10,12 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71b212e072ecc36419624313d48734f1, type: 3}
-  m_Name: Computer1
+  m_Name: Computer2
   m_EditorClassIdentifier: 
-  PlayerIndex: 2
-  Color: {r: 1, g: 0, b: 0, a: 1}
+  PlayerIndex: 3
+  Color: {r: 1, g: 1, b: 0, a: 1}
   Contribution: 2
   PathingStrategyType: TilePathManhattan
   Handicap: 1
   Ai: {fileID: 11400000, guid: 2ced663ca1a41e644b9736e5aeda9c8c, type: 2}
-  Enemy: {fileID: 11400000, guid: 775e0b7027494f3488cbe184a36a8544, type: 2}

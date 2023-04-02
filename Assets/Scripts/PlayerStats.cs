@@ -31,6 +31,10 @@ public class PlayerStats : ScriptableObject
     public string PathingStrategyType;
     public ITilePath PathingStrategy;
 
+    [Tooltip("Player starts with a fraction of TileSpawn.StartingArmySize")]
+    [Range(0, 1)]
+    public float Handicap = 1;
+
     [Tooltip("How the computer decides its moves")]
     public IAi Ai;
 
